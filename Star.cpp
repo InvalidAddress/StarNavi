@@ -48,19 +48,17 @@ void Star::texInit()
 // Initialize the global star texture. Cobbled together from bits of code found
 // online and from the OpenGL reference book (sixth edition).
 {
-	glGenTextures((GLsizei)1, &star_texture);
-	
-	cout << "texture generated\n";
-	
-	glBindTexture(GL_TEXTURE_2D, star_texture);
-	
-	cout << "texture bound\n";
+	ilGenImages(1, &star_texture);
+	ilBindImage(star_texture);
+	ilLoadImage((ILstring)"./images/star2.png");
+	ilutGLBindTexImage();
+	ilDeleteImages(1, &star_texture);
 	
 //------------------------------------------------------------------------------
 // Set the state of the current texture
 //------------------------------------------------------------------------------
 	// select modulate to mix texture with color for shading
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_ADD);
 
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -68,31 +66,6 @@ void Star::texInit()
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 //------------------------------------------------------------------------------
-
-	cout << "environment variables set\n";
-/*	
-//------------------------------------------------------------------------------
-// Load a raw image into an array of bytes.
-//------------------------------------------------------------------------------
-	int width = 64;
-	int height = 64;
-	GLubyte *imgdata;
-	FILE *image;
-
-	// allocate buffer
-	imgdata = (GLubyte*)malloc(width * height * 3);
-
-	// open and read texture data
-	image = fopen("./images/star.raw", "rb");
-	fread(imgdata, width * height * 3, 1, image);
-	fclose(image);
-//------------------------------------------------------------------------------
-
-	cout << "image data read in\n";
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, imgdata);
-*/
-	ilutGLLoadImage((ILstring)"./images/star.png");
 }
 //==============================================================================
 

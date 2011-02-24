@@ -6,7 +6,7 @@ CC = g++
 CFLAGS = -g -Wall
 	
 main:$(OBJECTS)
-	$(CC) $(CFLAGS) $(OBJECTS) -lm -lGL -lGLU -lglut -lilut -lX11 -o testmain
+	$(CC) $(CFLAGS) $(OBJECTS) -lm -lGL -lGLU -lglut -lIL -lILU -lILUT -lX11 -o testmain
 	
 	mv -f ./testmain /home/mhydock/indexer
 	chmod +x /home/mhydock/indexer/testmain

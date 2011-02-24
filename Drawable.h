@@ -9,7 +9,13 @@
 //						draw to a framebuffer.
 //==============================================================================
 
+#include "global_header.h"
+#include <GL/gl.h>
+#include <GL/glu.h>
+
 #define DRAWABLE
+#define ILUT_USE_OPENGL
+#include <IL/ilut.h>
 
 class Drawable
 {

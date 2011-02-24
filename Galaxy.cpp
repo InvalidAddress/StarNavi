@@ -76,14 +76,13 @@ void Galaxy::setDirectory(string d)
 		Star *temp = new Star(*i);
 		temp->randomPosition(0,360,0,240,-10,10);
 		stars.push_back(temp);
-		cout << "|";
-	}	
+	}
+	
+	cout << "stars made";
 }
 
 void Galaxy::draw()
 {
-	cout << "drawing a galaxy\n";
-	
 	glPushMatrix();
 		glRotatef(rotX,1,0,0);
 		glRotatef(rotY,0,1,0);
@@ -93,7 +92,6 @@ void Galaxy::draw()
 		int size = stars.size();
 		for (list<Star*>::iterator i = stars.begin(); i != stars.end(); i++)
 		{
-			cout << "drawing star " << n << " of " << size << ".\n";
 			(*i)->draw();
 			n++;
 		}

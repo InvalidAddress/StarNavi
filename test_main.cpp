@@ -18,6 +18,9 @@
 Galaxy *galaxy;
 GLuint Star::star_texture = 0;
 
+float orthoW = WIDTH;
+float orthoH = HEIGHT;
+
 void init()
 // Set clear color and shading model, initialize variables, and make menu.
 {
@@ -31,9 +34,15 @@ void init()
 	glDepthMask(GL_TRUE);
 	glEnable(GL_TEXTURE_2D);
 
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
 	glLoadIdentity();
 	
 	glViewport(0,0,WIDTH,HEIGHT);
+	
+	ilInit();
+	iluInit();
+	ilutRenderer(ILUT_OPENGL);
 }
 
 void display()
@@ -42,7 +51,7 @@ void display()
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(-WIDTH/2,WIDTH/2,-HEIGHT/2,HEIGHT/2,-10,10);
+	glOrtho(-orthoW/2,orthoW/2,-orthoH/2,orthoH/2,-10,10);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -60,6 +69,26 @@ void idleFunc()
 
 void reshape(int w, int h)
 {
+	float ratio = (float)w/(float)h;
+	
+	if (w < h)
+	{
+		orthoW = HEIGHT;
+		orthoH = HEIGHT / ratio;
+	}
+	else if (w > h)
+	{
+		orthoW = HEIGHT * ratio;
+		orthoH = HEIGHT;
+	}
+	else if (w == h)
+	{
+		orthoW = HEIGHT;
+		orthoH = HEIGHT;
+	}
+	
+	cout << orthoW << "  " << orthoH << endl;
+	
 	glViewport(0,0,w,h);
 }
 

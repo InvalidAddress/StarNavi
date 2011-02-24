@@ -8,13 +8,6 @@
 // File description:	Header to the star objects.
 //==============================================================================
 
-#include "global_header.h"
-#include <GL/gl.h>
-#include <GL/glu.h>
-
-#include <IL/ilut.h>
-
-
 #ifndef DRAWABLE
 #include "Drawable.h"
 #endif
