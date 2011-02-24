@@ -5,8 +5,10 @@ HEADERS = global_header.h
 CC = g++
 CFLAGS = -g -Wall
 	
-main:$(OBJECTS)
+normbuild:$(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) -lm -lGL -lGLU -lglut -lIL -lILU -lILUT -lX11 -o testmain
-	
-	mv -f ./testmain /home/mhydock/indexer
-	chmod +x /home/mhydock/indexer/testmain
+
+testbuild:
+	$(CC) $(CFLAGS) $(OBJECTS) -lm -lGL -lGLU -lglut -lIL -lILU -lILUT -lX11 -o testmain	
+	mv -f ./testmain ~/indexer
+	chmod +x ~indexer/testmain
