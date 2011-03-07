@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		14 February 2011
-// Last Updated:		16 February 2011
+// Last Updated:		5 March 2011
 //
 // File name:			indexer.h
 // Programmer:			Matthew Hydock
@@ -9,27 +9,27 @@
 //==============================================================================
 
 #include "global_header.h"
-#include "MimeIdentifier.h"
+#include "DirTree.h"
+
+#ifndef INDEXER
+#define INDEXER
 
 class Indexer
 {
 	private:
-		MimeIdentifier *mrmime;
-		int numfiles;
-		dirnode dir_tree;
-		list<filenode*> file_list;
-	
+		DirTree *dir_tree;
+		
 		void build(string dir);
-		void add(string p, string n);
-		bool isLessThan(string s1, string s2);
-		void clearTree();
-		void clearTree(dirnode *d);
 		
 	public:
 		Indexer(string root_path);
 		~Indexer();
+		
 		void build();
-		dirnode* getDirectoryTree();
+		void changeRoot(string new_root);
+		void clearTree();
+		DirTree* getDirectoryTree();
 		list<filenode*>* getFileList();
-		int getNumFiles();
 };
+
+#endif
