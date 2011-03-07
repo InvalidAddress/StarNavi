@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		14 February 2011
-// Last Updated:		21 February 2011
+// Last Updated:		5 March 2011
 //
 // File name:			Star.h
 // Programmer:			Matthew Hydock
@@ -8,9 +8,11 @@
 // File description:	Header to the star objects.
 //==============================================================================
 
-#ifndef DRAWABLE
 #include "Drawable.h"
-#endif
+#include "fs_structs.h"
+
+#ifndef STAR
+#define STAR
 
 class Star:Drawable
 {
@@ -34,3 +36,5 @@ class Star:Drawable
 		void recalc();
 		void draw();
 };
+
+#endif

@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		20 February 2011
-// Last Updated:		20 February 2011
+// Last Updated:		5 March 2011
 //
 // File name:			Drawable.h
 // Programmer:			Matthew Hydock
@@ -9,13 +9,18 @@
 //						draw to a framebuffer.
 //==============================================================================
 
+#define GL_GLEXT_PROTOTYPES
+
 #include "global_header.h"
 #include <GL/gl.h>
 #include <GL/glu.h>
 
-#define DRAWABLE
 #define ILUT_USE_OPENGL
 #include <IL/ilut.h>
+
+
+#ifndef DRAWABLE
+#define DRAWABLE
 
 class Drawable
 {
@@ -23,3 +28,5 @@ class Drawable
 		virtual void draw() = 0;
 		virtual ~Drawable() {};
 };
+
+#endif

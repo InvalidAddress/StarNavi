@@ -10,6 +10,10 @@
 //==============================================================================
 
 #include "global_header.h"
+#include "fs_structs.h"
+
+#ifndef MIMEIDENTIFIER
+#define MIMEIDENTIFIER
 
 class MimeIdentifier
 {
@@ -24,3 +28,5 @@ class MimeIdentifier
 		MimeIdentifier();
 		filetype obtainType(string f);
 };
+
+#endif
