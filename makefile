@@ -1,6 +1,6 @@
-SOURCES = Indexer.cpp test_main.cpp MimeIdentifier.cpp Star.cpp Galaxy.cpp
-OBJECTS = Indexer.o test_main.o MimeIdentifier.o Star.o Galaxy.o
-HEADERS = global_header.h
+SOURCES = MimeIdentifier.cpp DirTree.cpp Indexer.cpp Star.cpp Galaxy.cpp test_main.cpp
+OBJECTS = MimeIdentifier.o DirTree.o Indexer.o Star.o Galaxy.o test_main.o
+HEADERS = global_header.h fs_structs.h
 
 CC = g++
 CFLAGS = -g -Wall
@@ -8,7 +8,7 @@ CFLAGS = -g -Wall
 normbuild:$(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) -lm -lGL -lGLU -lglut -lIL -lILU -lILUT -lX11 -o testmain
 
-testbuild:
+testbuild:$(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) -lm -lGL -lGLU -lglut -lIL -lILU -lILUT -lX11 -o testmain	
 	mv -f ./testmain ~/indexer
-	chmod +x ~indexer/testmain
+	chmod +x ~/indexer/testmain
