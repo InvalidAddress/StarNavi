@@ -21,7 +21,7 @@
 class DirTree
 {
 	private:
-		MimeIdentifier *mrmime;
+		static MimeIdentifier *mrmime;
 		int numfiles;
 		dirnode root;
 		list<filenode*> *file_list;

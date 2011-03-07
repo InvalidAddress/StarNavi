@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		16 February 2011
-// Last Updated:		17 February 2011
+// Last Updated:		7 March 2011
 //
 // File name:			MimeIdentifier.cpp
 // Programmer:			Matthew Hydock
@@ -29,10 +29,11 @@ void MimeIdentifier::createMimeTable()
 	getline(mimefile,line);
 	while (!mimefile.eof())
 	{
-		toks = tokenize(line," \t");
-
-		if (!toks.empty()) mimetypes.push_back(toks);
-		
+		if (line[0] != '#')
+		{
+			toks = tokenize(line," \t");
+			if (toks.size() > 1) mimetypes.push_back(toks);
+		}	
 		getline(mimefile,line);
 	}
 	
@@ -55,10 +56,12 @@ string MimeIdentifier::getFileType(string f)
 // Seeks through the mime filetype database on the user's computer, and attempts
 // to determine the requested file's filetype.
 {
+	if (f.compare("") == 0)		return "";
+
 	for (list<vector<string> >::iterator i = mimetypes.begin(); i != mimetypes.end(); i++)
-		for (vector<string>::iterator j = (*i).begin(); j != (*i).end(); j++)
-			if (f.compare(*j) == 0)
-				return *((*i).begin());
+		for (vector<string>::iterator j = i->begin(); j != i->end(); j++)
+			if (j->compare(f) == 0)
+				return *(i->begin());
 
 	return "";
 }
@@ -66,6 +69,8 @@ string MimeIdentifier::getFileType(string f)
 filetype MimeIdentifier::enumFileType(string t)
 // Take a string representation of a file type, and turn it into an enumeration.
 {
+	if (t.compare("") == 0)		return UNKNOWN;
+		
 	string s = t.substr(0, t.find_first_of('/',0));
 		
 	if (s.compare("application") == 0)
@@ -90,7 +95,7 @@ filetype MimeIdentifier::enumFileType(string t)
 MimeIdentifier::MimeIdentifier()
 // Create the mime table.
 {
-	createMimeTable();
+	if (mimetypes.empty())	createMimeTable();
 }
 
 filetype MimeIdentifier::obtainType(string f)

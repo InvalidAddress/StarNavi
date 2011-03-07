@@ -19,15 +19,12 @@ void Indexer::build(string dir)
 {
 	DIR *d = opendir(dir.c_str());
 	dirent *dr = readdir(d);
-	
-	cout << "starting build\n";
 			
 	while (dr != NULL)
 	{
 		if (dr->d_type == DT_REG)
 		// If a file, add to file list
 			dir_tree->add(dir, dr->d_name);
-			
 		else if (dr->d_type == DT_DIR && (strcmp(dr->d_name, "..") != 0 && strcmp(dr->d_name, ".") != 0))
 		// If a directory, but not ./ or ../, then immediately dive into it.
 			build(dir + dr->d_name + "/");
@@ -36,8 +33,6 @@ void Indexer::build(string dir)
 	}
 	
 	closedir(d);
-	
-	cout << "build complete\n";
 }
 //==============================================================================
 
@@ -49,7 +44,6 @@ Indexer::Indexer(string root_path)
 // Constructor. Initialized the number of files, and sets the root path.
 {
 	dir_tree = new DirTree(root_path);
-	cout << "made a DirTree\n";
 }
 
 
@@ -57,6 +51,7 @@ Indexer::~Indexer()
 // Deconstructor. Clear and delete the file list.
 {
 	clearTree();
+	delete(dir_tree);
 }
 //==============================================================================
 

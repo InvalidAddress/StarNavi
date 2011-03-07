@@ -17,6 +17,7 @@
 
 Galaxy *galaxy;
 GLuint Star::star_texture = 0;
+MimeIdentifier* DirTree::mrmime = NULL;
 
 float orthoW = WIDTH;
 float orthoH = HEIGHT;

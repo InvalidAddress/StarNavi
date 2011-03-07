@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		6 March 2011
-// Last Updated:		6 March 2011
+// Last Updated:		7 March 2011
 //
 // File name:			fs_structs.h
 // Programmer:			Matthew Hydock
@@ -10,6 +10,7 @@
 //==============================================================================
 
 #include <dirent.h>
+#include <list>
 
 #ifndef FS_STRUCTS
 #define FS_STRUCTS
@@ -37,7 +38,7 @@ typedef struct filenode
 typedef struct dirnode
 {
 	string name;
-	list<filenode> files;
+	list<filenode*> files;
 	list<struct dirnode> dirs;
 }dirnode;
 //==============================================================================

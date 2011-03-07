@@ -16,17 +16,17 @@
 //==============================================================================
 DirTree::DirTree()
 // Parameterless directory tree constructor.
-{
-	mrmime = new MimeIdentifier();
-	file_list = new list<filenode*>();
-	numfiles = 0;
+{	
 }
 
 
 DirTree::DirTree(string dir)
 // Creates a directory tree with the root node at dir.
 {
-	DirTree();
+	if (mrmime == NULL)		mrmime = new MimeIdentifier();
+	
+	file_list = new list<filenode*>();
+	numfiles = 0;
 	
 	// Make sure the directory ends with a forward slash
 	if (*(dir.rbegin()) != '/')
@@ -40,8 +40,8 @@ DirTree::~DirTree()
 // Directory tree deconstructor.
 {
 	clearTree();
-	delete(file_list);
 	delete(mrmime);
+	delete(file_list);
 }
 //==============================================================================
 
@@ -54,7 +54,7 @@ void DirTree::add(string p, string n)
 {
 	// Create a filenode and set its attributes.	
 	filenode tempf;
-	string temp_string = p + n;	
+	string temp_string = p + n;
 	tempf.name = n;
 	tempf.path = p;
 	stat(temp_string.c_str(), &(tempf.attr));
@@ -70,7 +70,7 @@ void DirTree::add(string p, string n)
 	
 	// While there are still more paths to navigate...
 	for (int i = 0; i < path_toks.size();)
-	{
+	{		
 		// Scan the directory list for the current directory.
 		for (;d != currnode->dirs.end() && strcmp(path_toks[i].c_str(),d->name.c_str()) != 0 && !isLessThan(path_toks[i],d->name);d++);
 		
@@ -94,11 +94,10 @@ void DirTree::add(string p, string n)
 	// Now that we're in the right directory, add file to list. Doesn't matter
 	// that the list is out of order, as items in a list object take O(n) time
 	// to access, making neat searching algorithms useless.
-	currnode->files.push_back(tempf);
-	
+	currnode->files.push_back(&tempf);
 	// i still have seriously no clue how lists work, or why they appear to
 	// override the pointer character...
-	file_list->push_back(&(*(currnode->files.rbegin())));
+	file_list->push_back(&tempf);
 	
 	numfiles++;
 }
@@ -146,14 +145,14 @@ filenode* DirTree::getFile(string p, string n)
 	if (dir == NULL) return NULL;
 	
 	// Now scan the current directory's file list
-	list<filenode>::iterator f = (dir->files).begin();
-	for (; f != (dir->files).end(); f++);
+	list<filenode*>::iterator f = (dir->files).begin();
+	for (; f != (dir->files).end() && (*f)->name.compare(n) == 0; f++);
 	
 	// If the file doesn't exist, return null.
 	if (f == (dir->files).end())
 		return NULL;
 	
-	return &(*f);
+	return (*f);
 }
 //==============================================================================
 
@@ -172,14 +171,14 @@ void DirTree::dropBranch(dirnode *d)
 // Drop a branch from the tree.
 {
 	d->files.clear();
-//	cout << d->name << " files deleted\n";
+	cout << d->name << " files deleted\n";
 	list<dirnode>::iterator li = d->dirs.begin();
 	
 	for (; li != d->dirs.end(); li++)
 		dropBranch(&(*li));
 		
 	d->dirs.clear();
-//	cout << d->name << " subdirectories deleted\n";
+	cout << d->name << " subdirectories deleted\n";
 }
 //==============================================================================
 
