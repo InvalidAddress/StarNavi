@@ -19,7 +19,7 @@ void Indexer::build(string dir)
 {
 	DIR *d = opendir(dir.c_str());
 	dirent *dr = readdir(d);
-			
+	
 	while (dr != NULL)
 	{
 		if (dr->d_type == DT_REG)

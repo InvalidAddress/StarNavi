@@ -23,8 +23,7 @@ DirTree::DirTree()
 DirTree::DirTree(string dir)
 // Creates a directory tree with the root node at dir.
 {
-	if (mrmime == NULL)		mrmime = new MimeIdentifier();
-	
+	mrmime = new MimeIdentifier();
 	file_list = new list<filenode*>();
 	numfiles = 0;
 	
@@ -42,6 +41,8 @@ DirTree::~DirTree()
 	clearTree();
 	delete(mrmime);
 	delete(file_list);
+	
+	cout << "DIRTREE DELETED\n";
 }
 //==============================================================================
 
@@ -51,14 +52,16 @@ DirTree::~DirTree()
 //==============================================================================
 void DirTree::add(string p, string n)
 // Method to insert a file into its appropriate place in the file list.
-{
+{	
 	// Create a filenode and set its attributes.	
-	filenode tempf;
+	filenode *tempf = new filenode;
 	string temp_string = p + n;
-	tempf.name = n;
-	tempf.path = p;
-	stat(temp_string.c_str(), &(tempf.attr));
-	tempf.type = mrmime->obtainType(n);
+	tempf->name = n;
+	tempf->path = p;
+	stat(temp_string.c_str(), &(tempf->attr));
+	tempf->type = mrmime->obtainType(n);
+	
+	//cout << tempf->path << tempf->name << endl;
 	
 	// Tokenize the given path, and store in an array.
 	vector<string> path_toks = tokenize(p.substr(root.name.size()),"/");
@@ -94,10 +97,12 @@ void DirTree::add(string p, string n)
 	// Now that we're in the right directory, add file to list. Doesn't matter
 	// that the list is out of order, as items in a list object take O(n) time
 	// to access, making neat searching algorithms useless.
-	currnode->files.push_back(&tempf);
+	currnode->files.push_back(tempf);
 	// i still have seriously no clue how lists work, or why they appear to
 	// override the pointer character...
-	file_list->push_back(&tempf);
+	file_list->push_back(tempf);
+	
+	//cout << (*(file_list->rbegin()))->path << (*(file_list->rbegin()))->name << endl;
 	
 	numfiles++;
 }
@@ -171,14 +176,13 @@ void DirTree::dropBranch(dirnode *d)
 // Drop a branch from the tree.
 {
 	d->files.clear();
-	cout << d->name << " files deleted\n";
+
 	list<dirnode>::iterator li = d->dirs.begin();
 	
 	for (; li != d->dirs.end(); li++)
 		dropBranch(&(*li));
 		
 	d->dirs.clear();
-	cout << d->name << " subdirectories deleted\n";
 }
 //==============================================================================
 

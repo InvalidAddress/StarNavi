@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		6 February 2011
-// Last Updated:		5 March 2011
+// Last Updated:		7 March 2011
 //
 // File name:			global_header.h
 // Programmer:			Matthew Hydock
@@ -69,7 +69,7 @@ extern inline vector<string> tokenize(string s, string del)
 		return vector<string>();
 		
 	list<string> l;
-	char *cs = new char[s.size()+1];
+	char *cs = (char*)malloc(sizeof(char) * (s.size()+1));
 	char *ptr;
 	
 	strcpy(cs,s.c_str());
@@ -92,7 +92,7 @@ extern inline vector<string> tokenize(string s, string del)
 	}
 	
 	// cleanup
-	delete (cs);
+	free(cs);
 	
 	return sv;
 }
