@@ -41,12 +41,14 @@ Galaxy::Galaxy(string s)
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 //------------------------------------------------------------------------------
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, tex_data);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_data);
 	glBindTexture(GL_TEXTURE_2D,0);
 
 	cout << "created texture\n";
 
 	setDirectory(s);
+	
+	refreshTex();
 	
 	setRotation(0, 0);
 	setRotationSpeed(2);
@@ -94,7 +96,6 @@ void Galaxy::setRotationSpeed(float s)
 
 void Galaxy::setDirectory(string d)
 {
-	
 	if (stars != NULL)
 	{
 		stars->clear();
@@ -102,13 +103,19 @@ void Galaxy::setDirectory(string d)
 	}
 	if (indexer != NULL) delete(indexer);
 	
-	indexer = new Indexer(d);
+	stars	= new list<Star*>();
+	indexer	= new Indexer(d);
 	indexer->build();
 	
-	cout << "built file list\n";
+	cout << "file list built\n";
 	
 	list<filenode*> *files = indexer->getFileList();
-
+	
+	/*
+	for (list<filenode*>::iterator i = files->begin(); i != files->end(); i++)
+		cout << (*i)->name << endl;
+	*/
+	
 	for (list<filenode*>::iterator i = files->begin(); i != files->end(); i++)
 	{
 		Star *temp = new Star(*i);
@@ -125,17 +132,20 @@ void Galaxy::refreshTex()
 	glGenFramebuffers(1, &fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 	
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buff_tex, 0);
+	
 	GLuint depth_buff;
 	glGenRenderbuffers(1, &depth_buff);
 	glBindRenderbuffer(GL_RENDERBUFFER, depth_buff);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth_buff);
 	
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buff_tex, 0);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	cout << status << endl;
+
 	glPushAttrib(GL_VIEWPORT_BIT);
-	glViewport(-width/2,-height/2,width/2, height/2);
+	glViewport(0,0,width,height);
 
 	int n = 1;
 	int size = stars->size();
@@ -150,10 +160,10 @@ void Galaxy::refreshTex()
 		
 	glFlush();
 	
-	glBindRenderbuffer(GL_RENDERBUFFER, 0);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	
 	glPopAttrib();
+	
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 }
 
 void Galaxy::draw()

@@ -17,7 +17,6 @@
 
 Galaxy *galaxy;
 GLuint Star::star_texture = 0;
-MimeIdentifier* DirTree::mrmime = NULL;
 
 float orthoW = WIDTH;
 float orthoH = HEIGHT;
@@ -103,7 +102,7 @@ int main(int argc, char *argv[])
 	glutCreateWindow("StarDM");
 	
 	init();
-	
+
 	// Set up the galaxy.
 	string path;
 	
@@ -115,8 +114,16 @@ int main(int argc, char *argv[])
 	else
 		path = (string)argv[1];
 		
-	cout << path << "\n";	
+	cout << path << "\n";
+/*	
+	Indexer indexer(path);
+	indexer.build();
 	
+	list<filenode*> *file_list = indexer.getFileList();
+	
+	for (list<filenode*>::iterator i = file_list->begin(); i != file_list->end(); i++)
+		cout << (*i)->name << endl;	
+*/	
 	galaxy = new Galaxy(path);
 
 	// register display methods
@@ -125,5 +132,6 @@ int main(int argc, char *argv[])
 	glutReshapeFunc(reshape);
 	
 	glutMainLoop();
+
 	return 0;
 }
