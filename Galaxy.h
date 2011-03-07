@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		20 February 2011
-// Last Updated:		20 February 2011
+// Last Updated:		5 March 2011
 //
 // File name:			Galaxy.h
 // Programmer:			Matthew Hydock
@@ -12,12 +12,12 @@
 //						draw() method.
 //==============================================================================
 
+#include "Drawable.h"
 #include "Indexer.h"
 #include "Star.h"
 
-#ifndef DRAWABLE
-#include "Drawable.h"
-#endif
+#ifndef GALAXY
+#define GALAXY
 
 class Galaxy:Drawable
 {
@@ -26,8 +26,14 @@ class Galaxy:Drawable
 		float rotY;
 		float rotZ;
 		float rotSpeed;
-		list<Star*> stars;
+		list<Star*> *stars;
 		Indexer *indexer;
+		
+		GLuint buff;
+		GLuint buff_tex;
+		GLbyte *tex_data;
+		int width, height;
+		
 	public:
 		Galaxy(string s);
 		~Galaxy();
@@ -40,5 +46,8 @@ class Galaxy:Drawable
 		void setRotation(float x, float y);
 		void setRotationSpeed(float s);
 		void setDirectory(string d);
+		void refreshTex();
 		void draw();
 };
+
+#endif
