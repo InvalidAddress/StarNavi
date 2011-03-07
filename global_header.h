@@ -1,12 +1,12 @@
 //==============================================================================
 // Date Created:		6 February 2011
-// Last Updated:		16 February 2011
+// Last Updated:		5 March 2011
 //
 // File name:			global_header.h
 // Programmer:			Matthew Hydock
 //
-// File description:	A header file to contain structs and includes relevant
-//						to the StarDM project.
+// File description:	A header file to contain common and helpful includes and
+//						methods, compiled for the StarDM project.
 //==============================================================================
 
 #ifndef STARDM
@@ -15,8 +15,8 @@
 //C includes
 #include <stdlib.h>
 #include <sys/stat.h>
-#include <dirent.h>
 #include <string.h>
+#include <math.h>
 
 //C++ includes
 #include <iostream>
@@ -25,30 +25,9 @@
 #include <list>
 #include <vector>
 
+#include "MersenneTwister.h"
+
 using namespace std;
-
-// cuz i don't feel like typing 'struct dirent' every time i want to use one
-typedef struct dirent dirent;
-
-// To represent the different types of files.
-enum filetype {BIN, APP, AUDIO, IMAGE, TEXT, VIDEO, UNKNOWN};
-
-// Structure to a file and its various attributes.
-typedef struct filenode
-{
-	string path;
-	string name;
-	enum filetype type;
-	struct stat attr;
-}filenode;
-
-// Structure to represent a directory, and its list of files and directories.
-typedef struct dirnode
-{
-	string name;
-	list<filenode> files;
-	list<struct dirnode> dirs;
-}dirnode;
 
 extern inline char toLower(char a)
 // Makes lowercase characters uppercase, doesn't affect other characters.
@@ -57,6 +36,29 @@ extern inline char toLower(char a)
 		a -= 32;
 		
 	return a;
+}
+
+extern inline bool isLessThan(string s1, string s2)
+// Checks to see if s1 is alphabetically before s2.
+{
+	int diff = 0;
+	
+	// Compare the strings one letter at a time. Quit early if s1 is less than
+	// s2. Also, keep track of the equality of the strings.
+	for (int i = 0; i < s1.size()-1 && i < s2.size()-1 && diff == 0; i++)
+		diff = toLower(s1.at(i)) - toLower(s2.at(i));
+	
+	// If the strings appear equal but s1 is smaller than s2, then s1 is less
+	// than s2. Otherwise, let the lessThan variable be returned (which should
+	// be false after all this anyway).
+	if (diff == 0)
+	{
+		if (s1.size() < s2.size())
+			return true;
+		return false;
+	}
+			
+	return diff < 0;
 }
 
 extern inline vector<string> tokenize(string s, string del)
