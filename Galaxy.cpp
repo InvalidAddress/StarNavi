@@ -16,14 +16,22 @@
 
 Galaxy::Galaxy(string s)
 {
+	cout << "making a galaxy...\n";
+	diameter = 0;
+	
+	setRotation(0, 0);
+	setRotationSpeed(.25);
+	
+	rotZ = 0;
+	
 	indexer = NULL;
 	stars = NULL;
 	
-	cout << "making a galaxy\n";
-	
-	width = 400;
-	height = 400;
-	tex_data = new GLbyte[height*width];
+//==============================================================================
+// Make the texture
+//==============================================================================
+	tex_size = 1024;
+	tex_data = new GLbyte[tex_size*tex_size*4];
 	
 	cout << "made buffer\n";
 	
@@ -41,19 +49,14 @@ Galaxy::Galaxy(string s)
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 //------------------------------------------------------------------------------
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_data);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex_size, tex_size, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_data);
 	glBindTexture(GL_TEXTURE_2D,0);
-
+//==============================================================================
 	cout << "created texture\n";
 
 	setDirectory(s);
 	
 	refreshTex();
-	
-	setRotation(0, 0);
-	setRotationSpeed(2);
-	
-	rotZ = 0;
 }
 
 Galaxy::~Galaxy()
@@ -111,18 +114,18 @@ void Galaxy::setDirectory(string d)
 	
 	list<filenode*> *files = indexer->getFileList();
 	
-	/*
-	for (list<filenode*>::iterator i = files->begin(); i != files->end(); i++)
-		cout << (*i)->name << endl;
-	*/
+	diameter = 64.0 * pow((3.0*(double)files->size())/(4.0*M_PI),(1.0/3.0));
+	
+	cout << "diameter: " << diameter << endl;
 	
 	for (list<filenode*>::iterator i = files->begin(); i != files->end(); i++)
 	{
 		Star *temp = new Star(*i);
-		temp->randomPosition(0,360,0,240,-10,10);
+		temp->randomPosition(0,360,0,(diameter/2)-10,-10,10);
 		stars->push_back(temp);
 	}
 	
+
 	cout << "stars made\n";
 }
 
@@ -137,7 +140,7 @@ void Galaxy::refreshTex()
 	GLuint depth_buff;
 	glGenRenderbuffers(1, &depth_buff);
 	glBindRenderbuffer(GL_RENDERBUFFER, depth_buff);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, tex_size, tex_size);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth_buff);
 	
 
@@ -145,21 +148,26 @@ void Galaxy::refreshTex()
 	cout << status << endl;
 
 	glPushAttrib(GL_VIEWPORT_BIT);
-	glViewport(0,0,width,height);
+		glViewport(0,0,tex_size,tex_size);
 
-	int n = 1;
-	int size = stars->size();
-	for (list<Star*>::iterator i = stars->begin(); i != stars->end(); i++)
-	{
-		(*i)->draw();
-		n++;
-	}
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glOrtho(-diameter/2,diameter/2,-diameter/2,diameter/2,-10,10);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+		int n = 1;
+		int size = stars->size();
+		for (list<Star*>::iterator i = stars->begin(); i != stars->end(); i++)
+		{
+			(*i)->draw();
+			n++;
+		}
 			
-	rotZ += rotSpeed;
-	if (rotZ > 360) rotZ -= 360;
-		
-	glFlush();
-	
+		glFlush();
 	glPopAttrib();
 	
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -175,8 +183,6 @@ void Galaxy::draw()
 		glRotatef(rotY,0,1,0);
 		glRotatef(rotZ,0,0,1);
 	
-		glScalef(width,height,1);
-	
 		glBegin(GL_QUADS);
 			glTexCoord2f(0,1);	glVertex2d(-1,1);
 			glTexCoord2f(0,0);	glVertex2d(-1,-1);
@@ -188,4 +194,9 @@ void Galaxy::draw()
 	glPopMatrix();
 	
 	glBindTexture(GL_TEXTURE_2D, 0);
+	
+	rotZ += rotSpeed;
+		if (rotZ > 360) rotZ -= 360;
+	
+	glFlush();
 }

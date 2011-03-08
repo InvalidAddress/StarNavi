@@ -12,6 +12,8 @@
 #ifndef STARDM
 #define STARDM
 
+#define _USE_MATH_DEFINES
+
 //C includes
 #include <stdlib.h>
 #include <sys/stat.h>

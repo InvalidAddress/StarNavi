@@ -32,7 +32,8 @@ class Galaxy:Drawable
 		GLuint buff;
 		GLuint buff_tex;
 		GLbyte *tex_data;
-		int width, height;
+		int tex_size;
+		float diameter;
 		
 	public:
 		Galaxy(string s);

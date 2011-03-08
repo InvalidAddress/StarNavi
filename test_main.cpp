@@ -55,7 +55,8 @@ void display()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		
+	
+	glScalef(HEIGHT/2,HEIGHT/2,1);
 	galaxy->draw();
 	
 	glFlush();
@@ -115,15 +116,7 @@ int main(int argc, char *argv[])
 		path = (string)argv[1];
 		
 	cout << path << "\n";
-/*	
-	Indexer indexer(path);
-	indexer.build();
 	
-	list<filenode*> *file_list = indexer.getFileList();
-	
-	for (list<filenode*>::iterator i = file_list->begin(); i != file_list->end(); i++)
-		cout << (*i)->name << endl;	
-*/	
 	galaxy = new Galaxy(path);
 
 	// register display methods
