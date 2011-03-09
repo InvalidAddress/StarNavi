@@ -121,7 +121,7 @@ void Galaxy::setDirectory(string d)
 	for (list<filenode*>::iterator i = files->begin(); i != files->end(); i++)
 	{
 		Star *temp = new Star(*i);
-		temp->randomPosition(0,360,0,(diameter/2)-10,-10,10);
+		temp->randomPosition(0,360,0,(diameter/2)-10,-pow(diameter,.5),pow(diameter,.5));
 		stars->push_back(temp);
 	}
 	
@@ -131,6 +131,13 @@ void Galaxy::setDirectory(string d)
 
 void Galaxy::refreshTex()
 {
+	glBindTexture(GL_TEXTURE_2D, buff_tex);
+	delete(tex_data);
+	tex_size = 1024 * ((int)diameter/500);
+	tex_data = new GLbyte[tex_size*tex_size*4];
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex_size, tex_size, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_data);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	
 	GLuint fbo;
 	glGenFramebuffers(1, &fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);

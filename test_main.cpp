@@ -32,8 +32,11 @@ void init()
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthMask(GL_TRUE);
+	
 	glEnable(GL_TEXTURE_2D);
-
+	glEnable(GL_ALPHA_TEST);
+	glAlphaFunc(GL_GREATER,0.01);
+	
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 	glLoadIdentity();
@@ -97,7 +100,7 @@ int main(int argc, char *argv[])
 {
 	// set up main window
 	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGB);
+	glutInitDisplayMode(GLUT_DEPTH|GLUT_DOUBLE|GLUT_RGBA);
 	glutInitWindowSize(WIDTH, HEIGHT);
 	glutInitWindowPosition(200, 200);
 	glutCreateWindow("StarDM");

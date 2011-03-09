@@ -23,6 +23,8 @@ void Star::calculateDiameter()
 void Star::determineColor()
 // Uses the attached file's type to set the star's color.
 {
+	color[3] = 1.0;
+	
 	switch (file->type)
 	{
 		case BIN:		color[0] = 0.0;	color[1] = 0.0;	color[2] = 1.0;				// blue
@@ -33,7 +35,7 @@ void Star::determineColor()
 						break;
 		case IMAGE:		color[0] = 1.0;	color[1] = 1.0;	color[2] = 0.0;				// yellow
 						break;
-		case VIDEO:		color[0] = 1.0;	color[1] = 0.5;	color[2] = 0.0;				// red-orange
+		case VIDEO:		color[0] = 1.0;	color[1] = .25;	color[2] = 0.0;				// red-orange
 						break;
 		case TEXT:		color[0] = 1.0;	color[1] = 1.0;	color[2] = 1.0;				// white
 						break;
@@ -123,7 +125,7 @@ void Star::draw()
 		glTranslatef(distance,0,depth);
 		glScalef(diameter,diameter,1);
 	
-		glColor3fv(color);
+		glColor4fv(color);
 		glBegin(GL_QUADS);
 			glTexCoord2f(0,1);	glVertex2d(-1,1);
 			glTexCoord2f(0,0); glVertex2d(-1,-1);

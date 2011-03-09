@@ -21,7 +21,7 @@ class Star:Drawable
 		filenode *file;
 		float diameter;
 		float angle, distance, depth;
-		float color[3];
+		float color[4];
 		
 		void calculateDiameter();
 		void determineColor();
