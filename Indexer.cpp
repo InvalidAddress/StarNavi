@@ -44,6 +44,8 @@ Indexer::Indexer(string root_path)
 // Constructor. Initialized the number of files, and sets the root path.
 {
 	dir_tree = new DirTree(root_path);
+	
+	build();
 }
 
 

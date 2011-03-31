@@ -25,7 +25,7 @@ void Star::determineColor()
 {
 	color[3] = 1.0;
 	
-	switch (file->type)
+	switch (file->mime_enum)
 	{
 		case BIN:		color[0] = 0.0;	color[1] = 0.0;	color[2] = 1.0;				// blue
 						break;
@@ -128,7 +128,7 @@ void Star::draw()
 		glColor4fv(color);
 		glBegin(GL_QUADS);
 			glTexCoord2f(0,1);	glVertex2d(-1,1);
-			glTexCoord2f(0,0); glVertex2d(-1,-1);
+			glTexCoord2f(0,0);	glVertex2d(-1,-1);
 			glTexCoord2f(1,0);	glVertex2d(1,-1);
 			glTexCoord2f(1,1);	glVertex2d(1,1);
 		glEnd();

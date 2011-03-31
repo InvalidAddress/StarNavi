@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		6 March 2011
-// Last Updated:		7 March 2011
+// Last Updated:		23 March 2011
 //
 // File name:			fs_structs.h
 // Programmer:			Matthew Hydock
@@ -9,8 +9,11 @@
 //						and directory information
 //==============================================================================
 
+#include <sys/stat.h>
 #include <dirent.h>
+
 #include <list>
+#include <string>
 
 #ifndef FS_STRUCTS
 #define FS_STRUCTS
@@ -30,8 +33,11 @@ typedef struct filenode
 {
 	string path;
 	string name;
-	enum filetype type;
+	string mimetype;
+	string default_app;
+	enum filetype mime_enum;
 	struct stat attr;
+	list<string> tags;
 }filenode;
 
 // Structure to represent a directory, and its list of files and directories.
@@ -39,7 +45,8 @@ typedef struct dirnode
 {
 	string name;
 	list<filenode*> files;
-	list<struct dirnode> dirs;
+	list<struct dirnode*> dirs;
+	list<filenode*> all_files;
 }dirnode;
 //==============================================================================
 

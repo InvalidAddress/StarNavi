@@ -1,12 +1,11 @@
 //==============================================================================
 // Date Created:		20 February 2011
-// Last Updated:		21 February 2011
+// Last Updated:		23 February 2011
 //
 // File name:			Galaxy.h
 // Programmer:			Matthew Hydock
 //
-// File description:	A class that draws the files indexed by an Indexer as
-//						Stars in a galaxy.
+// File description:	A class that draws a list of files as Stars in a galaxy.
 //
 //						As it extends the Drawable class, it must implement a
 //						draw() method.
@@ -14,56 +13,68 @@
 
 #include "Galaxy.h"
 
-Galaxy::Galaxy(string s)
+void printGlError();
+void printFramebufferError();
+
+//==============================================================================
+// Constructors/Deconstructors
+//==============================================================================
+Galaxy::Galaxy(dirnode *r, list<filenode*> *f)
 {
 	cout << "making a galaxy...\n";
-	diameter = 0;
+	
+	if (r != NULL)
+		setDirectory(r);
+	else
+	{
+		root = NULL;
+		files = f;
+	}
+	
+	diameter = 64.0 * pow((3.0*(double)files->size())/(4.0*M_PI),(1.0/3.0));
+	radius = diameter/2;
+	thickness = pow(radius*2.0,.5);
 	
 	setRotation(0, 0);
-	setRotationSpeed(.25);
+	setRotationSpeed(.02);
 	
 	rotZ = 0;
 	
-	indexer = NULL;
-	stars = NULL;
+	mode = DIRECTORY;
 	
-//==============================================================================
-// Make the texture
-//==============================================================================
-	tex_size = 1024;
-	tex_data = new GLbyte[tex_size*tex_size*4];
+	sectors = NULL;
+	buildSectors();
 	
-	cout << "made buffer\n";
+	tex_data = NULL;
 	
-	glGenTextures((GLsizei)1, &buff_tex);	
-	glBindTexture(GL_TEXTURE_2D, buff_tex);
-//------------------------------------------------------------------------------
-// Set the state of the current texture
-//------------------------------------------------------------------------------
-	// select modulate to mix texture with color for shading
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-//------------------------------------------------------------------------------
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex_size, tex_size, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_data);
-	glBindTexture(GL_TEXTURE_2D,0);
-//==============================================================================
-	cout << "created texture\n";
-
-	setDirectory(s);
-	
+	initTexture();
 	refreshTex();
+	
+	cout << "galaxy built\n";
 }
 
 Galaxy::~Galaxy()
 {
-	stars->clear();
-	delete(stars);
-	delete(indexer);
+	for (list<GSector*>::iterator i = sectors->begin(); i != sectors->end(); i++)
+		delete (*i);
+
+	delete(sectors);
+}
+//==============================================================================
+
+
+//==============================================================================
+// Methods related to the angle and velocity of the galaxy.
+//==============================================================================
+void Galaxy::setRotation(float x, float y)
+{
+	rotX = x;
+	rotY = y;
+}
+
+void Galaxy::setRotationSpeed(float s)
+{
+	rotSpeed = s;
 }
 
 float Galaxy::getRotationX()
@@ -80,80 +91,128 @@ float Galaxy::getRotationSpeed()
 {
 	return rotSpeed;
 }
+//==============================================================================
 
-Indexer* Galaxy::getIndexer()
+
+//==============================================================================
+// Methods related to sector management.
+//==============================================================================
+void Galaxy::buildSectors()
 {
-	return indexer;
-}
+	cout << "building sectors\n";
+	clearSectors();
 	
-void Galaxy::setRotation(float x, float y)
-{
-	rotX = x;
-	rotY = y;
+	sectors = new list<GSector*>();
+	
+	if (mode == DIRECTORY)
+		buildHierarchy();
+		
+	cout << "sectors built\n";
 }
 
-void Galaxy::setRotationSpeed(float s)
+void Galaxy::buildHierarchy()
 {
-	rotSpeed = s;
-}
-
-void Galaxy::setDirectory(string d)
-{
-	if (stars != NULL)
+	cout << "hierarchy build mode\n";
+		
+	float arc_begin = 0;
+	float arc_end = 360.0*((float)root->files.size()/(float)root->all_files.size());
+	sectors->push_back(new GSector(NULL,&(root->files),radius,arc_begin,arc_end));
+	cout << "root sector built\n";
+	
+	cout << "creating sectors for directories\n";
+	for (list<dirnode*>::iterator i = root->dirs.begin(); i != root->dirs.end(); i++)
 	{
-		stars->clear();
-		delete (stars);
+		arc_begin = arc_end;
+		arc_end = arc_begin + 360.0*((float)(*i)->all_files.size()/(float)root->all_files.size());
+		sectors->push_back(new GSector(*i,NULL,radius,arc_begin,arc_end));
 	}
-	if (indexer != NULL) delete(indexer);
-	
-	stars	= new list<Star*>();
-	indexer	= new Indexer(d);
-	indexer->build();
-	
-	cout << "file list built\n";
-	
-	list<filenode*> *files = indexer->getFileList();
-	
-	diameter = 64.0 * pow((3.0*(double)files->size())/(4.0*M_PI),(1.0/3.0));
-	
-	cout << "diameter: " << diameter << endl;
-	
-	for (list<filenode*>::iterator i = files->begin(); i != files->end(); i++)
-	{
-		Star *temp = new Star(*i);
-		temp->randomPosition(0,360,0,(diameter/2)-10,-pow(diameter,.5),pow(diameter,.5));
-		stars->push_back(temp);
-	}
-	
+}
 
-	cout << "stars made\n";
+void Galaxy::clearSectors()
+{
+	if (sectors != NULL)
+	{
+		for (list<GSector*>::iterator i = sectors->begin(); i != sectors->end(); i++)
+			delete (*i);
+		delete (sectors);
+	}
+}
+//==============================================================================
+
+
+void Galaxy::setDirectory(dirnode *r)
+// Set the galaxy's file indexer.
+{
+	root = r;
+	files = &(r->all_files);
+}
+
+dirnode* Galaxy::getDirectory()
+// Obtain a pointer to the indexer used by the galaxy.
+{
+	return root;
+}
+
+
+//==============================================================================
+// Methods related to drawing.
+//==============================================================================
+void Galaxy::initTexture()
+{
+	glGenTextures((GLsizei)1, &texture);	
+	glBindTexture(GL_TEXTURE_2D, texture);
+//------------------------------------------------------------------------------
+// Set the state of the current texture
+//------------------------------------------------------------------------------
+	// select modulate to mix texture with color for shading
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+//------------------------------------------------------------------------------
+	glBindTexture(GL_TEXTURE_2D,0);
+
+	cout << "created texture\n";
 }
 
 void Galaxy::refreshTex()
+// Update the galaxy texture.
 {
-	glBindTexture(GL_TEXTURE_2D, buff_tex);
-	delete(tex_data);
-	tex_size = 1024 * ((int)diameter/500);
+	tex_size = (int)(1024.0 * (diameter/500.0));
+
+	cout << diameter << "  " << tex_size << endl;
+
+	// Create a depth buffer for the framebuffer object.
+	GLuint fbo_depth;
+	glGenRenderbuffers(1, &fbo_depth);
+	glBindRenderbuffer(GL_RENDERBUFFER, fbo_depth);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, tex_size, tex_size);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, fbo_depth);
+
+	printGlError();
+
+	// Prepare the texture for rendering.
+	glBindTexture(GL_TEXTURE_2D, texture);
+	if (tex_data = NULL) delete(tex_data);
 	tex_data = new GLbyte[tex_size*tex_size*4];
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex_size, tex_size, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_data);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	
+	printGlError();
+	
+	// Create and bind the frame buffer object.
 	GLuint fbo;
 	glGenFramebuffers(1, &fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, fbo_depth);
 	
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buff_tex, 0);
-	
-	GLuint depth_buff;
-	glGenRenderbuffers(1, &depth_buff);
-	glBindRenderbuffer(GL_RENDERBUFFER, depth_buff);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, tex_size, tex_size);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth_buff);
-	
+	printFramebufferError();
 
-	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-	cout << status << endl;
-
+	// Push the viewport to an attribute stack, and render as usual.
 	glPushAttrib(GL_VIEWPORT_BIT);
 		glViewport(0,0,tex_size,tex_size);
 
@@ -161,35 +220,37 @@ void Galaxy::refreshTex()
 
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		glOrtho(-diameter/2,diameter/2,-diameter/2,diameter/2,-10,10);
+		glOrtho(-radius,radius,-radius,radius,-thickness,thickness);
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-		int n = 1;
-		int size = stars->size();
-		for (list<Star*>::iterator i = stars->begin(); i != stars->end(); i++)
-		{
+		for (list<GSector*>::iterator i = sectors->begin(); i != sectors->end(); i++)
 			(*i)->draw();
-			n++;
-		}
 			
 		glFlush();
 	glPopAttrib();
 	
+	// Release the buffers, and return to the defaults.
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 }
 
 void Galaxy::draw()
+// Draw the galaxy.
 {
-	glBindTexture(GL_TEXTURE_2D, buff_tex);
+	// Bind the previously rendered texture.
+	glBindTexture(GL_TEXTURE_2D, texture);
 
 	glPushMatrix();
-		glRotatef(rotX,1,0,0);
-		glRotatef(rotY,0,1,0);
+		// Rotate the galaxy 
+//		glRotatef(rotX,1,0,0);
+//		glRotatef(rotY,0,1,0);
 		glRotatef(rotZ,0,0,1);
-	
+
+//		for (list<GSector*>::iterator i = sectors->begin(); i != sectors->end(); i++)
+//			(*i)->draw();
+
 		glBegin(GL_QUADS);
 			glTexCoord2f(0,1);	glVertex2d(-1,1);
 			glTexCoord2f(0,0);	glVertex2d(-1,-1);
@@ -206,4 +267,57 @@ void Galaxy::draw()
 		if (rotZ > 360) rotZ -= 360;
 	
 	glFlush();
+}
+//==============================================================================
+
+void printGlError()
+// Check to see if there were any gl errors
+{
+	switch(glGetError())
+	{
+		case GL_INVALID_ENUM		: cout << "invalid enum\n";
+									  break;
+		case GL_INVALID_VALUE		: cout << "invalid value\n";
+									  break;
+		case GL_INVALID_OPERATION	: cout << "invalid operation\n";
+									  break;
+		case GL_STACK_OVERFLOW		: cout << "stack overflow\n";
+									  break;
+		case GL_STACK_UNDERFLOW		: cout << "stack underflow\n";
+									  break;
+		case GL_OUT_OF_MEMORY		: cout << "out of memory\n";
+									  break;
+		case GL_TABLE_TOO_LARGE		: cout << "table too large\n";
+									  break;
+		case GL_INVALID_FRAMEBUFFER_OPERATION: cout << "invalid framebuffer operation\n";
+									  break;
+		default						: cout << "no error\n";
+	}
+}
+
+void printFramebufferError()
+// Check to see if there were any framebuffer errors
+{
+	GLenum e = glCheckFramebufferStatus(GL_FRAMEBUFFER); 
+	switch(e)
+	{
+		case GL_FRAMEBUFFER_UNSUPPORTED						: cout << "format not supported\n";
+															  break;
+		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT	: cout << "missing attachment\n";
+															  break;
+		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT			: cout << "incomplete attachment\n";
+															  break;
+		case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE			: cout << "incomplete multisample\n";
+															  break;
+		case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER			: cout << "missing draw buffer\n";
+															  break;
+		case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER			: cout << "missing read buffer\n";
+															  break;
+		case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS		: cout << "incomplete layer targets\n";
+															  break;
+		case GL_FRAMEBUFFER_COMPLETE						: cout << "complete\n";
+															  break;
+		default												: cout << "mystery error: " << e << endl;
+															  break;		
+	}
 }

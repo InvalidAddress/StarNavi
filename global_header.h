@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		6 February 2011
-// Last Updated:		7 March 2011
+// Last Updated:		18 March 2011
 //
 // File name:			global_header.h
 // Programmer:			Matthew Hydock
@@ -15,8 +15,8 @@
 #define _USE_MATH_DEFINES
 
 //C includes
+#include <unistd.h>
 #include <stdlib.h>
-#include <sys/stat.h>
 #include <string.h>
 #include <math.h>
 
@@ -99,4 +99,12 @@ extern inline vector<string> tokenize(string s, string del)
 	return sv;
 }
 
+template<typename T> extern inline void append(list<T> *l1, list<T> *l2)
+// Since the list library doesn't have a function to append a list onto another
+// list...
+{
+	typename list<T>::iterator i2 = l2->begin();
+	for(; i2 != l2->end(); i2++)
+		l1->push_back(*i2);
+}
 #endif

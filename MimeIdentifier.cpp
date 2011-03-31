@@ -1,13 +1,12 @@
 //==============================================================================
 // Date Created:		16 February 2011
-// Last Updated:		7 March 2011
+// Last Updated:		18 March 2011
 //
 // File name:			MimeIdentifier.cpp
 // Programmer:			Matthew Hydock
 //
-// File description:	A class that identifies the mime-type of a file, based
-//						on its extension. The mime table is held in memory, to
-//						make seeking faster.
+// File description:	A class that identifies the mime-type of a file. Used to
+//						be a custom build, now a wrapper for libmagic.
 //==============================================================================
 
 #include "MimeIdentifier.h"
@@ -15,76 +14,57 @@
 //==============================================================================
 // Private methods.
 //==============================================================================	
-void MimeIdentifier::createMimeTable()
-// Reads the mime.types file and turns it into a table in memory.
-{
-	ifstream mimefile("/etc/mime.types");
-	string line;
-	vector<string> toks;
-
-	// Skip all of the lines that don't contain type/extension associations.
-	for (getline(mimefile,line); line.compare("") != 0 && !mimefile.eof(); getline(mimefile,line));
-	
-	// Begin reading lines and looking for the appropriate type.
-	getline(mimefile,line);
-	while (!mimefile.eof())
-	{
-		if (line[0] != '#')
-		{
-			toks = tokenize(line," \t");
-			if (toks.size() > 1) mimetypes.push_back(toks);
-		}	
-		getline(mimefile,line);
-	}
-	
-	mimefile.close();
-}
-
-string MimeIdentifier::getExtension(string f)
-// Tear the extention off of the file name.
-{
-	int i;
-	for (i = f.size()-1; i > 0 && f.at(i) != '.'; i--);
-	
-	if (i > 0)
-		return f.substr(i+1);
-		
-	return "";
-}
-
-string MimeIdentifier::getFileType(string f)
+void MimeIdentifier::setFileType(filenode *f)
 // Seeks through the mime filetype database on the user's computer, and attempts
 // to determine the requested file's filetype.
 {
-	if (f.compare("") == 0)		return "";
+	magic_t magic_cookie;
+	
+	/*MAGIC_MIME tells magic to return a mime of the file, but you can specify different things*/
+	magic_cookie = magic_open(MAGIC_MIME);
 
-	for (list<vector<string> >::iterator i = mimetypes.begin(); i != mimetypes.end(); i++)
-		for (vector<string>::iterator j = i->begin(); j != i->end(); j++)
-			if (j->compare(f) == 0)
-				return *(i->begin());
+	if (magic_cookie == NULL)
+	{
+		printf("unable to initialize magic library\n");
+		exit(1);
+	}
 
-	return "";
+	if (magic_load(magic_cookie, NULL) != 0)
+	{
+		printf("cannot load magic database - %s\n", magic_error(magic_cookie));
+		magic_close(magic_cookie);
+		exit(1);
+	}
+
+	string temp1 = f->path+f->name;
+	string temp2 = magic_file(magic_cookie, temp1.c_str());
+	if (temp2.find_first_of("binary") != string::npos)
+		f->mimetype = temp2.substr(0,temp2.find_first_of('/'));
+	else
+		f->mimetype = "binary";
+		
+	magic_close(magic_cookie);
 }
 
-filetype MimeIdentifier::enumFileType(string t)
+void MimeIdentifier::enumFileType(filenode *f)
 // Take a string representation of a file type, and turn it into an enumeration.
 {
-	if (t.compare("") == 0)		return UNKNOWN;
-		
-	string s = t.substr(0, t.find_first_of('/',0));
-		
-	if (s.compare("application") == 0)
-		return APP;
-	if (s.compare("audio") == 0)
-		return AUDIO;
-	if (s.compare("image") == 0)
-		return IMAGE;
-	if (s.compare("text") == 0)
-		return TEXT;
-	if (s.compare("video") == 0)
-		return VIDEO;
-		
-	return UNKNOWN;
+	if ((f->mimetype).compare("") == 0)	
+		f->mime_enum = UNKNOWN;
+	else if ((f->mimetype).compare("binary") == 0)
+		f->mime_enum = BIN;
+	else if ((f->mimetype).compare("application") == 0)
+		f->mime_enum = APP;
+	else if ((f->mimetype).compare("audio") == 0)
+		f->mime_enum = AUDIO;
+	else if ((f->mimetype).compare("image") == 0)
+		f->mime_enum = IMAGE;
+	else if ((f->mimetype).compare("text") == 0)
+		f->mime_enum = TEXT;
+	else if ((f->mimetype).compare("video") == 0)
+		f->mime_enum = VIDEO;
+	else	
+		f->mime_enum = UNKNOWN;
 }
 //==============================================================================
 
@@ -93,14 +73,14 @@ filetype MimeIdentifier::enumFileType(string t)
 // Public methods.
 //==============================================================================
 MimeIdentifier::MimeIdentifier()
-// Create the mime table.
+// errm, do nothing?
 {
-	if (mimetypes.empty())	createMimeTable();
 }
 
-filetype MimeIdentifier::obtainType(string f)
+void MimeIdentifier::obtainType(filenode *f)
 // Scan through the mime table, and return the type of the requested file.
 {
-	return enumFileType(getFileType(getExtension(f)));
+	setFileType(f);
+	enumFileType(f);
 }
 //==============================================================================

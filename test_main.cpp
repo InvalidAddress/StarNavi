@@ -11,6 +11,7 @@
 
 #include <GL/glut.h>
 #include "Galaxy.h"
+#include "Indexer.h"
 
 #define WIDTH 640
 #define HEIGHT 480
@@ -54,7 +55,7 @@ void display()
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(-orthoW/2,orthoW/2,-orthoH/2,orthoH/2,-10,10);
+	glOrtho(-orthoW/2,orthoW/2,-orthoH/2,orthoH/2,-20,20);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -117,10 +118,12 @@ int main(int argc, char *argv[])
 		path = "./";
 	else
 		path = (string)argv[1];
-		
-	cout << path << "\n";
 	
-	galaxy = new Galaxy(path);
+	Indexer *in = new Indexer(path);
+	
+	cout << endl;
+	
+	galaxy = new Galaxy(in->getDirectoryTree()->getRootNode());
 
 	// register display methods
 	glutDisplayFunc(display);

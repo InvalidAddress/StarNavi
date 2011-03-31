@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		5 March 2011
-// Last Updated:		6 March 2011
+// Last Updated:		21 March 2011
 //
 // File name:			DirTree.h
 // Programmer:			Matthew Hydock
@@ -23,11 +23,9 @@ class DirTree
 	private:
 		MimeIdentifier *mrmime;
 		int numfiles;
-		dirnode root;
-		list<filenode*> *file_list;
+		dirnode *root;
 		
 	public:
-		DirTree();
 		DirTree(string s);
 		~DirTree();
 		
@@ -40,6 +38,7 @@ class DirTree
 		
 		list<filenode*>* getFileList();
 		string getRootPath();
+		dirnode* getRootNode();
 		int getNumFiles();
 };
 

@@ -1,23 +1,23 @@
 //==============================================================================
 // Date Created:		20 February 2011
-// Last Updated:		5 March 2011
+// Last Updated:		23 March 2011
 //
 // File name:			Galaxy.h
 // Programmer:			Matthew Hydock
 //
-// File description:	Header to a class that draws the files indexed by an
-//						Indexer as Stars in a galaxy.
+// File description:	Header to a class that draws a list of files as Stars in
+//						a galaxy.
 //
 //						As it extends the Drawable class, it must implement a
 //						draw() method.
 //==============================================================================
 
-#include "Drawable.h"
-#include "Indexer.h"
-#include "Star.h"
+#include "GSector.h"
 
 #ifndef GALAXY
 #define GALAXY
+
+enum cluster_type{DIRECTORY,TIME,NAME,TAG};
 
 class Galaxy:Drawable
 {
@@ -26,27 +26,37 @@ class Galaxy:Drawable
 		float rotY;
 		float rotZ;
 		float rotSpeed;
-		list<Star*> *stars;
-		Indexer *indexer;
+		list<GSector*> *sectors;
+		list<filenode*> *files;
+		dirnode *root;
 		
-		GLuint buff;
-		GLuint buff_tex;
+		GLuint texture;
 		GLbyte *tex_data;
 		int tex_size;
 		float diameter;
+		float radius;
+		float thickness;
+		
+		cluster_type mode;
 		
 	public:
-		Galaxy(string s);
+		Galaxy(dirnode *r, list<filenode*> *f = NULL);
 		~Galaxy();
-		
-		float getRotationX();
-		float getRotationY();
-		float getRotationSpeed();
-		Indexer* getIndexer();
 		
 		void setRotation(float x, float y);
 		void setRotationSpeed(float s);
-		void setDirectory(string d);
+		float getRotationX();
+		float getRotationY();
+		float getRotationSpeed();
+		
+		void setDirectory(dirnode *r);
+		dirnode* getDirectory();
+		
+		void buildSectors();
+		void buildHierarchy();
+		void clearSectors();
+		
+		void initTexture();
 		void refreshTex();
 		void draw();
 };
