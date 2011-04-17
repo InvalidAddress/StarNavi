@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		20 February 2011
-// Last Updated:		23 February 2011
+// Last Updated:		6 April 2011
 //
 // File name:			Galaxy.h
 // Programmer:			Matthew Hydock
@@ -13,13 +13,10 @@
 
 #include "Galaxy.h"
 
-void printGlError();
-void printFramebufferError();
-
 //==============================================================================
 // Constructors/Deconstructors
 //==============================================================================
-Galaxy::Galaxy(dirnode *r, list<filenode*> *f)
+Galaxy::Galaxy(dirnode *r, list<filenode*> *f, cluster_type m)
 {
 	cout << "making a galaxy...\n";
 	
@@ -31,11 +28,15 @@ Galaxy::Galaxy(dirnode *r, list<filenode*> *f)
 		files = f;
 	}
 	
+	xPos = 0;
+	yPos = 0;
+	side = 0;
+		
 	diameter = 64.0 * pow((3.0*(double)files->size())/(4.0*M_PI),(1.0/3.0));
 	radius = diameter/2;
 	thickness = pow(radius*2.0,.5);
 	
-	setRotation(0, 0);
+	setRotation(0,0);
 	setRotationSpeed(.02);
 	
 	rotZ = 0;
@@ -140,6 +141,18 @@ void Galaxy::clearSectors()
 //==============================================================================
 
 
+void Galaxy::setMode(cluster_type m)
+// Set the galaxy's clustering mode.
+{
+	mode = m;
+}
+
+cluster_type Galaxy::getMode()
+// Return the galaxy's clustering mode.
+{
+	return mode;
+}
+
 void Galaxy::setDirectory(dirnode *r)
 // Set the galaxy's file indexer.
 {
@@ -210,7 +223,7 @@ void Galaxy::refreshTex()
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, fbo_depth);
 	
-	printFramebufferError();
+	//printFramebufferError();
 
 	// Push the viewport to an attribute stack, and render as usual.
 	glPushAttrib(GL_VIEWPORT_BIT);
@@ -239,18 +252,21 @@ void Galaxy::refreshTex()
 void Galaxy::draw()
 // Draw the galaxy.
 {
+	// Set the size and origin of the galaxy, based on the viewport.
+	int p[4];
+	glGetIntegerv(GL_VIEWPORT,p);
+	side = (p[2]<p[3])?p[2]:p[3];
+	xPos = ((float)p[2])/2.0;
+	yPos = ((float)p[3])/2.0;
+	
 	// Bind the previously rendered texture.
 	glBindTexture(GL_TEXTURE_2D, texture);
 
 	glPushMatrix();
 		// Rotate the galaxy 
-//		glRotatef(rotX,1,0,0);
-//		glRotatef(rotY,0,1,0);
 		glRotatef(rotZ,0,0,1);
-
-//		for (list<GSector*>::iterator i = sectors->begin(); i != sectors->end(); i++)
-//			(*i)->draw();
-
+		glScalef(side,side,1);
+		
 		glBegin(GL_QUADS);
 			glTexCoord2f(0,1);	glVertex2d(-1,1);
 			glTexCoord2f(0,0);	glVertex2d(-1,-1);
@@ -259,6 +275,8 @@ void Galaxy::draw()
 		glEnd();
 	
 		glFlush();
+		
+		if (selected != NULL) selected->drawMask();
 	glPopMatrix();
 	
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -270,54 +288,37 @@ void Galaxy::draw()
 }
 //==============================================================================
 
-void printGlError()
-// Check to see if there were any gl errors
+
+//==============================================================================
+// Checking for mouse-overs/clicking.
+//==============================================================================
+bool Galaxy::isColliding(float x, float y)
 {
-	switch(glGetError())
-	{
-		case GL_INVALID_ENUM		: cout << "invalid enum\n";
-									  break;
-		case GL_INVALID_VALUE		: cout << "invalid value\n";
-									  break;
-		case GL_INVALID_OPERATION	: cout << "invalid operation\n";
-									  break;
-		case GL_STACK_OVERFLOW		: cout << "stack overflow\n";
-									  break;
-		case GL_STACK_UNDERFLOW		: cout << "stack underflow\n";
-									  break;
-		case GL_OUT_OF_MEMORY		: cout << "out of memory\n";
-									  break;
-		case GL_TABLE_TOO_LARGE		: cout << "table too large\n";
-									  break;
-		case GL_INVALID_FRAMEBUFFER_OPERATION: cout << "invalid framebuffer operation\n";
-									  break;
-		default						: cout << "no error\n";
-	}
+	selected = NULL;
+	
+	float localX = x-xPos;
+	float localY = y-yPos;
+	
+	float angle_r = atan2(localY,localX);
+	float angle_d = angle_r*(180.0/M_PI);
+	float magnitude = sqrt(pow(localX,2.0)+pow(localY,2.0));
+	
+	if (magnitude > side)
+		return collide_flag = false;
+	
+	for (list<GSector*>::iterator i = sectors->begin(); i != sectors->end(); i++)
+		if ((*i)->isColliding(angle_d, magnitude))
+			selected = (*i);
+		
+	return collide_flag = true;
 }
 
-void printFramebufferError()
-// Check to see if there were any framebuffer errors
+GSector* Galaxy::getSelected()
 {
-	GLenum e = glCheckFramebufferStatus(GL_FRAMEBUFFER); 
-	switch(e)
-	{
-		case GL_FRAMEBUFFER_UNSUPPORTED						: cout << "format not supported\n";
-															  break;
-		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT	: cout << "missing attachment\n";
-															  break;
-		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT			: cout << "incomplete attachment\n";
-															  break;
-		case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE			: cout << "incomplete multisample\n";
-															  break;
-		case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER			: cout << "missing draw buffer\n";
-															  break;
-		case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER			: cout << "missing read buffer\n";
-															  break;
-		case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS		: cout << "incomplete layer targets\n";
-															  break;
-		case GL_FRAMEBUFFER_COMPLETE						: cout << "complete\n";
-															  break;
-		default												: cout << "mystery error: " << e << endl;
-															  break;		
-	}
+	return selected;	
 }
+//==============================================================================
+
+
+
+

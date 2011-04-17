@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		12 March 2011
-// Last Updated:		21 March 2011
+// Last Updated:		17 April 2011
 //
 // File name:			GSector.h
 // Programmer:			Matthew Hydock
@@ -18,17 +18,24 @@
 #ifndef GSECTOR
 #define GSECTOR
 
-class GSector:Drawable
+class GSector:public Drawable
 {
 	private:
+		// Real dimensions of the sector.
 		float arc_begin;
 		float arc_end;
 		float radius;
 		float thickness;
 		
+		// File representation.
 		list<Star*> *stars;
 		list<filenode*> *files;
 		dirnode *root;
+		
+		// Render to texture.
+		GLuint texture;
+		GLbyte *tex_data;
+		int tex_size;
 		
 		void clearStars();
 		
@@ -45,11 +52,15 @@ class GSector:Drawable
 		float getArcBegin();
 		float getArcEnd();
 		
+		list<filenode*>* getFileList();
 		void setDirectory(dirnode *r);
 		dirnode* getDirectory();
 		
+		void buildMask();
+		void drawMask();
 		void draw();
-		void drawOutline();
+		
+		bool isColliding(float x, float y);
 };
 
 #endif

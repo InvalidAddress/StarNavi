@@ -1,0 +1,65 @@
+//==============================================================================
+// Date Created:		17 April 2011
+// Last Updated:		17 April 2011
+//
+// File name:			Drawable.cpp
+// Programmer:			Matthew Hydock
+//
+// File description:	Methods for an abstract class. Removed from the header
+//						file because I was getting compile errors.
+//==============================================================================
+
+#include "Drawable.h"
+
+void Drawable::printGlError()
+// Check to see if there were any gl errors
+{
+	switch(glGetError())
+	{
+		case GL_INVALID_ENUM		: cout << "invalid enum\n";
+									  break;
+		case GL_INVALID_VALUE		: cout << "invalid value\n";
+									  break;
+		case GL_INVALID_OPERATION	: cout << "invalid operation\n";
+									  break;
+		case GL_STACK_OVERFLOW		: cout << "stack overflow\n";
+									  break;
+		case GL_STACK_UNDERFLOW		: cout << "stack underflow\n";
+									  break;
+		case GL_OUT_OF_MEMORY		: cout << "out of memory\n";
+									  break;
+		case GL_TABLE_TOO_LARGE		: cout << "table too large\n";
+									  break;
+		case GL_INVALID_FRAMEBUFFER_OPERATION: cout << "invalid framebuffer operation\n";
+									  break;
+		default						: cout << "no error\n";
+	}
+}
+
+/*
+void Drawable::printFramebufferError()
+// Check to see if there were any framebuffer errors
+{
+	GLenum e = glCheckFramebufferStatus(GL_FRAMEBUFFER); 
+	switch(e)
+	{
+		case GL_FRAMEBUFFER_UNSUPPORTED						: cout << "format not supported\n";
+															  break;
+		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT	: cout << "missing attachment\n";
+															  break;
+		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT			: cout << "incomplete attachment\n";
+															  break;
+		case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE			: cout << "incomplete multisample\n";
+															  break;
+		case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER			: cout << "missing draw buffer\n";
+															  break;
+		case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER			: cout << "missing read buffer\n";
+															  break;
+		case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS		: cout << "incomplete layer targets\n";
+															  break;
+		case GL_FRAMEBUFFER_COMPLETE						: cout << "complete\n";
+															  break;
+		default												: cout << "mystery error: " << e << endl;
+															  break;		
+	}
+}*/

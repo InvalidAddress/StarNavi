@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		20 February 2011
-// Last Updated:		23 March 2011
+// Last Updated:		17 April 2011
 //
 // File name:			Galaxy.h
 // Programmer:			Matthew Hydock
@@ -19,28 +19,42 @@
 
 enum cluster_type{DIRECTORY,TIME,NAME,TAG};
 
-class Galaxy:Drawable
+class Galaxy:public Drawable
 {
 	private:
+		// How the galaxy is drawn (external).
+		float xPos;
+		float yPos;
+		float side;
+		
+		// Define the motion and angle of galaxy.
 		float rotX;
 		float rotY;
 		float rotZ;
 		float rotSpeed;
-		list<GSector*> *sectors;
-		list<filenode*> *files;
-		dirnode *root;
 		
-		GLuint texture;
-		GLbyte *tex_data;
-		int tex_size;
+		// Dimensions of galaxy (internal).
 		float diameter;
 		float radius;
 		float thickness;
 		
+		// Stores galaxy's files and directories.
+		list<GSector*> *sectors;
+		list<filenode*> *files;
+		dirnode *root;
+		
+		GSector* selected;
+		
+		// Render to texture.
+		GLuint texture;
+		GLbyte *tex_data;
+		int tex_size;
+		
+		// How to cluster files in the galaxy.
 		cluster_type mode;
 		
 	public:
-		Galaxy(dirnode *r, list<filenode*> *f = NULL);
+		Galaxy(dirnode *r, list<filenode*> *f = NULL, cluster_type m = DIRECTORY);
 		~Galaxy();
 		
 		void setRotation(float x, float y);
@@ -48,6 +62,9 @@ class Galaxy:Drawable
 		float getRotationX();
 		float getRotationY();
 		float getRotationSpeed();
+		
+		void setMode(cluster_type m);
+		cluster_type getMode();
 		
 		void setDirectory(dirnode *r);
 		dirnode* getDirectory();
@@ -59,6 +76,9 @@ class Galaxy:Drawable
 		void initTexture();
 		void refreshTex();
 		void draw();
+		
+		bool isColliding(float x, float y);
+		GSector* getSelected();
 };
 
 #endif

@@ -1,12 +1,12 @@
 //==============================================================================
 // Date Created:		6 February 2011
-// Last Updated:		18 March 2011
+// Last Updated:		17 April 2011
 //
 // File name:			global_header.h
 // Programmer:			Matthew Hydock
 //
 // File description:	A header file to contain common and helpful includes and
-//						methods, compiled for the StarDM project.
+//						methods, compiled for the StarNavi project.
 //==============================================================================
 
 #ifndef STARDM
@@ -27,7 +27,15 @@
 #include <list>
 #include <vector>
 
+
+#ifdef LList
+#define list list<T>
+#elif defined VList
+#define list vector<t>
+#endif
+ 
 #include "MersenneTwister.h"
+#include "Functors.h"
 
 using namespace std;
 

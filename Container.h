@@ -1,25 +1,59 @@
 //==============================================================================
 // Date Created:		20 February 2011
-// Last Updated:		20 February 2011
+// Last Updated:		17 April 2011
 //
 // File name:			Container.h
 // Programmer:			Matthew Hydock
 //
 // File description:	Header to a class that can contain objects that extend
-//						the Drawable class. It's role is to switch the OpenGL
-//						framebuffer to it's own buffer, and then make the
-//						Drawable objects it contains draw to that buffer, which
-//						will later be mapped as a texture on a plane.
+//						the Drawable class. It draws objects by building a
+//						viewport of a requested size in a specified location,
+//						and attaches an ortho space to it to draw in.
 //==============================================================================
 
-class Container:Drawable
+#include "Drawable.h"
+#include "StateManager.h"
+
+#ifndef CONTAINER
+#define CONTAINER
+
+enum anchor_type {CENTER, LEFT_UPPER, RIGHT_UPPER, RIGHT_LOWER, LEFT_LOWER};
+
+class Container:public Drawable
 {
 	private:
 		float xPos;
 		float yPos;
-		Drawable content;
-		//FRAMEBUFFER SHIT
-	public:
-		void Container(Drawable d);
-}
+		float width;
+		float height;
+		anchor_type anchor;
 		
+		Drawable *content;
+		AbstractFunctor *action;
+		
+	public:
+		Container(Drawable *d,AbstractFunctor *fn, float x, float y, float w, float h, anchor_type a = CENTER);
+		~Container();
+		
+		Drawable* getContent();
+		
+		void setPos(float x, float y);
+		void setPosX(float x);
+		void setPosY(float y);
+		float getPosX();
+		float getPosY();
+		
+		void setWidth(float w);
+		void setHeight(float h);
+		float getWidth();
+		float getHeight();
+		
+		void setAnchor(anchor_type a);
+		anchor_type getAnchor();
+		
+		bool isColliding(float x, float y);
+		
+		void draw();
+};
+
+#endif

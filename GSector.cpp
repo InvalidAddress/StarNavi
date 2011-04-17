@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		18 March 2011
-// Last Updated:		23 March 2011
+// Last Updated:		6 April 2011
 //
 // File name:			GSector.h
 // Programmer:			Matthew Hydock
@@ -106,6 +106,13 @@ float GSector::getArcEnd()
 	return arc_end;
 }
 //==============================================================================
+
+list<filenode*>* GSector::getFileList()
+// Return the sector's file list. Use this only if getDirectory returns NULL.
+{
+	return files;
+}
+
 void GSector::setDirectory(dirnode *r)
 // Set the sector's root directory.
 {
@@ -118,28 +125,94 @@ dirnode* GSector::getDirectory()
 {
 	return root;
 }
+
+
+void GSector::buildMask()
+{
+	tex_size = (int)(1024.0 * (radius*2/500.0));
+
+	cout << radius*2 << "  " << tex_size << endl;
+
+	// Create a depth buffer for the framebuffer object.
+	GLuint fbo_depth;
+	glGenRenderbuffers(1, &fbo_depth);
+	glBindRenderbuffer(GL_RENDERBUFFER, fbo_depth);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, tex_size, tex_size);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, fbo_depth);
+
+	printGlError();
+
+	// Prepare the texture for rendering.
+	glBindTexture(GL_TEXTURE_2D, texture);
+	if (tex_data = NULL) delete(tex_data);
+	tex_data = new GLbyte[tex_size*tex_size*4];
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex_size, tex_size, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_data);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	
+	printGlError();
+	
+	// Create and bind the frame buffer object.
+	GLuint fbo;
+	glGenFramebuffers(1, &fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, fbo_depth);
+	
+	//printFramebufferError();
+
+	// Push the viewport to an attribute stack, and render as usual.
+	glPushAttrib(GL_VIEWPORT_BIT);
+		glViewport(0,0,tex_size,tex_size);
+
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glOrtho(-radius,radius,-radius,radius,-thickness,thickness);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+		glBegin(GL_TRIANGLES);
+			glColor4d(0,0,0,.75);
+			float outer = 360-(arc_end-arc_begin);
+			float i = arc_end;
+			for (float j = i+10; j <= arc_end+outer; j += 10)
+			{
+				glVertex3d(0,0,1);
+				glVertex3d((radius+50)*cos(i),(radius+50)*sin(i),1);
+				glVertex3d((radius+50)*cos(j),(radius+50)*sin(j),1);
+				i = j;
+			}
+			glVertex3d(0,0,1);
+			glVertex3d((radius+50)*cos(i),(radius+50)*sin(i),1);
+			glVertex3d((radius+50)*cos(arc_end+outer),(radius+50)*sin(arc_end+outer),1);
+		glEnd();
 			
-void GSector::drawOutline()
+		glFlush();
+	glPopAttrib();
+	
+	// Release the buffers, and return to the defaults.
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+}
+		
+void GSector::drawMask()
 // Accentuate the sector, by darkening the rest of the galaxy, and drawing a 
 // glowing outline around the sector.
 {
-	glBegin(GL_TRIANGLES);
-		glColor4d(0,0,0,.75);
-		float outer = 360-(arc_end-arc_begin);
-		float i = arc_end;
-		for (float j = i+10; j <= arc_end+outer; j += 10)
-		{
-			glVertex3d(0,0,1);
-			glVertex3d((radius+50)*cos(i),(radius+50)*sin(i),1);
-			glVertex3d((radius+50)*cos(j),(radius+50)*sin(j),1);
-			i = j;
-		}
-		glVertex3d(0,0,1);
-		glVertex3d((radius+50)*cos(i),(radius+50)*sin(i),1);
-		glVertex3d((radius+50)*cos(arc_end+outer),(radius+50)*sin(arc_end+outer),1);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	glBegin(GL_QUADS);
+		glTexCoord2f(0,1);	glVertex2d(-1,1);
+		glTexCoord2f(0,0);	glVertex2d(-1,-1);
+		glTexCoord2f(1,0);	glVertex2d(1,-1);
+		glTexCoord2f(1,1);	glVertex2d(1,1);
 	glEnd();
 	
+	glFlush();
 	
+	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void GSector::draw()
@@ -147,3 +220,10 @@ void GSector::draw()
 	for (list<Star*>::iterator i = stars->begin(); i != stars->end(); i++)
 		(*i)->draw();
 }
+
+bool GSector::isColliding(float x, float y)
+// X and Y are actually polar coordinates in this case.
+{
+	return collide_flag = (x >= arc_begin) && (x <= arc_end) && (y <= radius);
+}
+		
