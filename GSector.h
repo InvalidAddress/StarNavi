@@ -31,6 +31,7 @@ class GSector:public Drawable
 		list<Star*> *stars;
 		list<filenode*> *files;
 		dirnode *root;
+		string name;
 		
 		// Render to texture.
 		GLuint texture;
@@ -40,9 +41,12 @@ class GSector:public Drawable
 		void clearStars();
 		
 	public:
-		GSector(dirnode *r, list<filenode*> *f, float ra, float b, float e);
+		GSector(dirnode *r, list<filenode*> *f, float ra, float b, float e, string n = "");
 		~GSector();
 		void buildStars();
+		
+		void setName(string n);
+		string getName();
 		
 		void setRadius(float r);
 		void setArcBegin(float b);

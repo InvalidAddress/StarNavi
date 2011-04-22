@@ -14,7 +14,7 @@
 
 #include "GSector.h"
 
-GSector::GSector(dirnode *r, list<filenode*> *f, float ra, float b, float e)
+GSector::GSector(dirnode *r, list<filenode*> *f, float ra, float b, float e, string n)
 // Creates a sector, with a list of files and the given dimensions. Can take a
 // dirnode for hierarchical functionality, but it is not necessary.
 {	
@@ -25,7 +25,12 @@ GSector::GSector(dirnode *r, list<filenode*> *f, float ra, float b, float e)
 		root = NULL;
 		files = f;
 	}
-		
+	
+	if (root != NULL && n == "")
+		name = root->name;
+	else
+		name = n;
+	
 	radius = ra;
 	
 	arc_begin = b;
@@ -71,6 +76,17 @@ void GSector::clearStars()
 			delete (*i);
 		delete (stars);
 	}
+}
+
+
+void GSector::setName(string n)
+{
+	name = n;
+}
+
+string GSector::getName()
+{
+	return name;
 }
 
 //==============================================================================
@@ -123,6 +139,7 @@ void GSector::setDirectory(dirnode *r)
 dirnode* GSector::getDirectory()
 // Obtain the sector's root directory.
 {
+	if (root == NULL) cout << "sector root is null!\n";
 	return root;
 }
 
@@ -201,6 +218,20 @@ void GSector::drawMask()
 // Accentuate the sector, by darkening the rest of the galaxy, and drawing a 
 // glowing outline around the sector.
 {
+	glBegin(GL_TRIANGLE_FAN);
+		float outer = 360-abs(arc_end-arc_begin);
+		for (float i = arc_end;i <= arc_end+outer; i += 5)
+		{
+			glColor4d(1,1,1,1);
+			glVertex2d(0,0);
+			//glColor4d(0,0,0,1);
+			
+			glVertex2d(cos(i*M_PI/180),sin(i*M_PI/180));
+			glVertex2d(cos((i+5)*M_PI/180),sin((i+5)*M_PI/180));
+		}
+	glEnd();
+
+/*
 	glBindTexture(GL_TEXTURE_2D, texture);
 
 	glBegin(GL_QUADS);
@@ -213,6 +244,7 @@ void GSector::drawMask()
 	glFlush();
 	
 	glBindTexture(GL_TEXTURE_2D, 0);
+*/
 }
 
 void GSector::draw()
@@ -224,6 +256,6 @@ void GSector::draw()
 bool GSector::isColliding(float x, float y)
 // X and Y are actually polar coordinates in this case.
 {
-	return collide_flag = (x >= arc_begin) && (x <= arc_end) && (y <= radius);
+	return collide_flag = (x >= arc_begin) && (x <= arc_end) && (y <= 1.0);
 }
 		

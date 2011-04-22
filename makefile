@@ -6,9 +6,9 @@ CC = g++
 CFLAGS = -g -Wall
 	
 normbuild:$(OBJECTS)
-	$(CC) $(CFLAGS) $(OBJECTS) -lm -lmagic -lGL -lGLU -lglut -lIL -lILU -lILUT -lX11 -o planetes
+	$(CC) $(CFLAGS) $(OBJECTS) -lm -lmagic -lGL -lGLU -lglut -lIL -lILU -lILUT -lX11 -o starnavi
 
 testbuild:$(OBJECTS)
-	$(CC) $(CFLAGS) $(OBJECTS) -lm -lmagic -lGL -lGLU -lglut -lIL -lILU -lILUT -lX11 -o planetes	
-	mv -f ./planetes ~/test\ dir
-	chmod +x ~/test\ dir/planetes
+	$(CC) $(CFLAGS) $(OBJECTS) -lm -lmagic -lGL -lGLU -lglut -lIL -lILU -lILUT -lX11 -o starnavi	
+	mv -f ./starnavi ~/test\ dir
+	chmod +x ~/test\ dir/starnavi

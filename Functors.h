@@ -47,3 +47,11 @@ template <class TClass> class Functor:public AbstractFunctor
 		virtual void Call()
 		{ (*pt2Object.*fpt)();};		// execute member function
 };
+
+class NullFunctor:public AbstractFunctor
+{
+	public:
+
+	void operator()() {return;};		// call using operator
+	void Call() {return;};				// call using function
+};

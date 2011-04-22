@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		20 February 2011
-// Last Updated:		6 April 2011
+// Last Updated:		20 April 2011
 //
 // File name:			Galaxy.h
 // Programmer:			Matthew Hydock
@@ -16,7 +16,7 @@
 //==============================================================================
 // Constructors/Deconstructors
 //==============================================================================
-Galaxy::Galaxy(dirnode *r, list<filenode*> *f, cluster_type m)
+Galaxy::Galaxy(dirnode *r, list<filenode*> *f, cluster_type m, string n)
 {
 	cout << "making a galaxy...\n";
 	
@@ -28,6 +28,11 @@ Galaxy::Galaxy(dirnode *r, list<filenode*> *f, cluster_type m)
 		files = f;
 	}
 	
+	if (root != NULL && n == "")
+		name = root->name;
+	else
+		name = n;
+	
 	xPos = 0;
 	yPos = 0;
 	side = 0;
@@ -37,13 +42,14 @@ Galaxy::Galaxy(dirnode *r, list<filenode*> *f, cluster_type m)
 	thickness = pow(radius*2.0,.5);
 	
 	setRotation(0,0);
-	setRotationSpeed(.02);
+	setRotationSpeed(0.0);
 	
 	rotZ = 0;
 	
 	mode = DIRECTORY;
 	
 	sectors = NULL;
+	selected = NULL;
 	buildSectors();
 	
 	tex_data = NULL;
@@ -114,10 +120,16 @@ void Galaxy::buildSectors()
 void Galaxy::buildHierarchy()
 {
 	cout << "hierarchy build mode\n";
-		
+	
+	if (root == NULL)
+	{
+		sectors->push_back(new GSector(NULL,files,radius,0,360,name));
+		return;
+	}
+	
 	float arc_begin = 0;
 	float arc_end = 360.0*((float)root->files.size()/(float)root->all_files.size());
-	sectors->push_back(new GSector(NULL,&(root->files),radius,arc_begin,arc_end));
+	sectors->push_back(new GSector(NULL,&(root->files),radius,arc_begin,arc_end,"./"));
 	cout << "root sector built\n";
 	
 	cout << "creating sectors for directories\n";
@@ -137,6 +149,13 @@ void Galaxy::clearSectors()
 			delete (*i);
 		delete (sectors);
 	}
+}
+
+
+list<GSector*>* Galaxy::getSectors()
+// Return a list of the galaxy's sectors.
+{
+	return sectors;
 }
 //==============================================================================
 
@@ -251,35 +270,52 @@ void Galaxy::refreshTex()
 
 void Galaxy::draw()
 // Draw the galaxy.
-{
+{	
 	// Set the size and origin of the galaxy, based on the viewport.
 	int p[4];
 	glGetIntegerv(GL_VIEWPORT,p);
 	side = (p[2]<p[3])?p[2]:p[3];
 	xPos = ((float)p[2])/2.0;
 	yPos = ((float)p[3])/2.0;
-	
-	// Bind the previously rendered texture.
-	glBindTexture(GL_TEXTURE_2D, texture);
 
 	glPushMatrix();
 		// Rotate the galaxy 
 		glRotatef(rotZ,0,0,1);
-		glScalef(side,side,1);
+		glScalef((side-5)/2,(side-5)/2,1);
 		
+		/*
+		glColor3d(1,1,1);
+		glBegin(GL_LINES);
+			for (list<GSector*>::iterator i = sectors->begin(); i != sectors->end(); i++)
+			{
+				float arc_begin = (*i)->getArcBegin();
+				float arc_begin_r = arc_begin * M_PI/180;
+				float arc_end = (*i)->getArcEnd();
+				float arc_end_r = arc_end * M_PI/180;
+				
+				glVertex2d(0.0,0.0);
+				glVertex2d(cos(arc_begin_r),sin(arc_begin_r));
+
+				glVertex2d(0.0,0.0);
+				glVertex2d(cos(arc_end_r),sin(arc_end_r));
+			}
+		glEnd();		
+		*/
+		
+		//if (selected != NULL) selected->drawMask();
+		
+		// Bind the previously rendered texture.
+		glBindTexture(GL_TEXTURE_2D, texture);
 		glBegin(GL_QUADS);
 			glTexCoord2f(0,1);	glVertex2d(-1,1);
 			glTexCoord2f(0,0);	glVertex2d(-1,-1);
 			glTexCoord2f(1,0);	glVertex2d(1,-1);
 			glTexCoord2f(1,1);	glVertex2d(1,1);
 		glEnd();
-	
-		glFlush();
+		glBindTexture(GL_TEXTURE_2D, 0);
 		
-		if (selected != NULL) selected->drawMask();
+		glFlush();
 	glPopMatrix();
-	
-	glBindTexture(GL_TEXTURE_2D, 0);
 	
 	rotZ += rotSpeed;
 		if (rotZ > 360) rotZ -= 360;
@@ -302,14 +338,21 @@ bool Galaxy::isColliding(float x, float y)
 	float angle_r = atan2(localY,localX);
 	float angle_d = angle_r*(180.0/M_PI);
 	float magnitude = sqrt(pow(localX,2.0)+pow(localY,2.0));
+	float norm_mag = magnitude/(side/2);
+
+	angle_d -= rotZ;	
+	angle_d = (angle_d < 0)?angle_d+360:angle_d;
 	
-	if (magnitude > side)
+	cout << angle_d << ", " << norm_mag << endl;
+	
+	if (norm_mag > 1.0)
 		return collide_flag = false;
 	
 	for (list<GSector*>::iterator i = sectors->begin(); i != sectors->end(); i++)
-		if ((*i)->isColliding(angle_d, magnitude))
+		if ((*i)->isColliding(angle_d, norm_mag))
 			selected = (*i);
 		
+	if (selected != NULL) cout << "collide with sector " << selected->getName() << endl;
 	return collide_flag = true;
 }
 
@@ -318,7 +361,3 @@ GSector* Galaxy::getSelected()
 	return selected;	
 }
 //==============================================================================
-
-
-
-

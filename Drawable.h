@@ -24,10 +24,11 @@
 
 class Drawable
 {
-	protected:
+	protected:		
 		bool collide_flag;
 
 	public:
+	
 		virtual bool isColliding(float x, float y) = 0;
 		virtual void draw() = 0;
 		virtual ~Drawable() {};

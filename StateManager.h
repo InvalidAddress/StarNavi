@@ -31,7 +31,6 @@ class StateManager:public Drawable
 		void forward();
 		void backward();
 		void navigate();
-		void buildGalaxy(list<filenode*> *files, cluster_type mode);
 		
 		bool isColliding(float x, float y);
 		

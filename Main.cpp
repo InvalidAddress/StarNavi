@@ -14,14 +14,13 @@
 #include "Container.h"
 #include "StateManager.h"
 
-StateManager *sm;
-list<Container*> containers;
-int oldW, oldH;
 
-void act()
-{
-	sm->navigate();
-}
+#define START_W 800
+#define START_H 600
+
+GLuint Star::star_texture = 0;
+list<Container*> containers;
+int oldW = START_W, oldH = START_H;
 
 void init()
 // Set clear color and shading model, initialize variables, and make menu.
@@ -44,13 +43,10 @@ void init()
 	ilInit();
 	iluInit();
 	ilutRenderer(ILUT_OPENGL);
-	
-	oldW = glutGet(GLUT_SCREEN_WIDTH);
-	oldH = glutGet(GLUT_SCREEN_HEIGHT);
 }
 
 void display()
-{
+{	
 	for (list<Container*>::iterator i = containers.begin(); i != containers.end(); i++)
 		(*i)->draw();
 	
@@ -65,16 +61,24 @@ void idleFunc()
 
 void reshape(int w, int h)
 {	
+	float wRatio = (float)w/(float)START_W;
+	float hRatio = (float)h/(float)START_H;
+	
 	for (list<Container*>::iterator i = containers.begin(); i != containers.end(); i++)
 	{
-		(*i)->setPosX((*i)->getPosX() * (float)oldW/(float)w);
-		(*i)->setPosY((*i)->getPosY() * (float)oldH/(float)h);
-		(*i)->setWidth((*i)->getWidth() * (float)oldW/(float)w);
-		(*i)->setHeight((*i)->getHeight() * (float)oldH/(float)h);
+		(*i)->scale(wRatio, hRatio);
+		
+		float oldX = (*i)->getPosX();
+		float oldY = (*i)->getPosY();
+		
+		float xOffset = (oldX * wRatio)-oldX;
+		float yOffset = (oldY * hRatio)-oldY;
+		
+		(*i)->translate(xOffset,yOffset);
 	}
 	
-	oldW = glutGet(GLUT_SCREEN_WIDTH);
-	oldH = glutGet(GLUT_SCREEN_HEIGHT);
+	oldW = w;
+	oldH = h;
 	
 	cout << oldW << "  " << oldH << endl;
 	
@@ -83,16 +87,19 @@ void reshape(int w, int h)
 
 void mouseClick(int button, int state, int x, int y)
 {
+	int newY = oldH-y;
+	
 	for (list<Container*>::iterator i = containers.begin(); i != containers.end(); i++)
-		if ((*i)->isColliding(x,y))
-			if ((*i)->getContent() == sm)
-				sm->navigate();
+		if ((*i)->isColliding(x,newY))
+			(*i)->activate();
 }	
 
 void mouseHover(int x, int y)
 {
+	int newY = oldH-y;
+	
 	for (list<Container*>::iterator i = containers.begin(); i != containers.end(); i++)
-		(*i)->isColliding(x,y);
+		(*i)->isColliding(x,newY);
 }
 
 int main(int argc, char *argv[])
@@ -100,7 +107,7 @@ int main(int argc, char *argv[])
 	// set up main window
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DEPTH|GLUT_DOUBLE|GLUT_RGBA);
-	glutInitWindowSize(500, 500);
+	glutInitWindowSize(oldW, oldH);
 	glutInitWindowPosition(200, 200);
 	glutCreateWindow("StarNavi");
 	
@@ -117,9 +124,9 @@ int main(int argc, char *argv[])
 	else
 		path = (string)argv[1];
 	
-	sm = new StateManager(path);
+	StateManager *sm = new StateManager(path);
 	Functor<StateManager> *f = new Functor<StateManager>(sm, &StateManager::navigate);
-	Container *c = new Container(sm,f,0,0,200,200);
+	Container *c = new Container(sm,f,200,0,600,525);
 	
 	containers.push_back(c);
 

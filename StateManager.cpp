@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		6 April 2011
-// Last Updated:		6 April 2011
+// Last Updated:		20 April 2011
 //
 // File name:			StateManager.h
 // Programmer:			Matthew Hydock
@@ -21,9 +21,7 @@ StateManager::StateManager(string dir)
 {
 	indexer = new Indexer(dir);
 	
-	cout << endl;
-	
-	Galaxy *temp = new Galaxy(indexer->getDirectoryTree()->getRootNode());
+	Galaxy *temp = new Galaxy(indexer->getDirectoryTree()->getRootNode());	
 	galaxies.push_back(temp);
 	
 	curr = galaxies.begin();
@@ -63,31 +61,27 @@ void StateManager::navigate()
 // If a sector in the current directory has been selected, make it into a
 // galaxy, and make that galaxy the currently displayed one.
 {
+	if ((*curr)->getSectors()->size() == 1)
+		return;
+		
 	GSector* selected = (*curr)->getSelected();
 	
 	if (selected != NULL)
 	{
-		dirnode* dir = selected->getDirectory();
+		dirnode *dir = selected->getDirectory();
+		Galaxy *temp;
+		
 		if (dir != NULL)
-		{
-			Galaxy *temp = new Galaxy(dir);
-			galaxies.push_back(temp);
-			curr++;
-		}
+			temp = new Galaxy(dir,NULL,(*curr)->getMode());
 		else
 		{
 			list<filenode*> *files = selected->getFileList();
-			buildGalaxy(files,NAME);
+			temp = new Galaxy(NULL,files,(*curr)->getMode(),(*curr)->getDirectory()->name);
 		}
+		
+		galaxies.push_back(temp);
+		curr++;
 	}
-}
-
-void StateManager::buildGalaxy(list<filenode*> *files, cluster_type mode)
-// For making galaxies that can't be made through simple navigation.
-{
-	Galaxy *temp = new Galaxy(NULL,files,mode);
-	galaxies.push_back(temp);
-	curr++;
 }
 //==============================================================================
 

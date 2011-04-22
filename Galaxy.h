@@ -43,6 +43,8 @@ class Galaxy:public Drawable
 		list<filenode*> *files;
 		dirnode *root;
 		
+		string name;
+		
 		GSector* selected;
 		
 		// Render to texture.
@@ -54,7 +56,7 @@ class Galaxy:public Drawable
 		cluster_type mode;
 		
 	public:
-		Galaxy(dirnode *r, list<filenode*> *f = NULL, cluster_type m = DIRECTORY);
+		Galaxy(dirnode *r, list<filenode*> *f = NULL, cluster_type m = DIRECTORY, string n = "");
 		~Galaxy();
 		
 		void setRotation(float x, float y);
@@ -72,6 +74,8 @@ class Galaxy:public Drawable
 		void buildSectors();
 		void buildHierarchy();
 		void clearSectors();
+		
+		list<GSector*>* getSectors();
 		
 		void initTexture();
 		void refreshTex();

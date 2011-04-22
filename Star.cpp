@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		15 February 2011
-// Last Updated:		21 February 2011
+// Last Updated:		20 April 2011
 //
 // File name:			Star.cpp
 // Programmer:			Matthew Hydock
@@ -17,7 +17,7 @@
 void Star::calculateDiameter()
 // Set the radius of the star based on the size of the file.
 {
-	diameter = log10((float)(file->attr.st_size)+1)/log10(1000.0);
+	diameter = log10((float)(file->attr.st_size)+1)/log10(1000.0) + 1;
 }
 
 void Star::determineColor()
