@@ -24,7 +24,12 @@
 
 class Drawable
 {
-	protected:		
+	protected:
+		float xPos;
+		float yPos;
+		float width;
+		float height;
+	
 		bool collide_flag;
 
 	public:
@@ -32,6 +37,17 @@ class Drawable
 		virtual bool isColliding(float x, float y) = 0;
 		virtual void draw() = 0;
 		virtual ~Drawable() {};
+		
+		void setPosition(float x, float y);
+		void setPosX(float x);
+		void setPosY(float y);
+		float getPosX();
+		float getPosY();
+		
+		void setWidth(float w);
+		void setHeight(float h);
+		float getWidth();
+		float getHeight();
 		
 		void printGlError();
 		//void printFramebufferError();

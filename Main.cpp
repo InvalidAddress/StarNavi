@@ -13,7 +13,7 @@
 #include <GL/glut.h>
 #include "Container.h"
 #include "StateManager.h"
-
+#include "Button.h"
 
 #define START_W 800
 #define START_H 600
@@ -21,6 +21,7 @@
 GLuint Star::star_texture = 0;
 list<Container*> containers;
 int oldW = START_W, oldH = START_H;
+int delay = 0;
 
 void init()
 // Set clear color and shading model, initialize variables, and make menu.
@@ -47,11 +48,15 @@ void init()
 
 void display()
 {	
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	for (list<Container*>::iterator i = containers.begin(); i != containers.end(); i++)
 		(*i)->draw();
 	
 	glFlush();
 	glutSwapBuffers();
+	
+	delay++;
 }
 
 void idleFunc()
@@ -87,6 +92,11 @@ void reshape(int w, int h)
 
 void mouseClick(int button, int state, int x, int y)
 {
+	if (delay < 50)
+		return;
+	
+	delay = 0;
+	
 	int newY = oldH-y;
 	
 	for (list<Container*>::iterator i = containers.begin(); i != containers.end(); i++)
@@ -125,10 +135,17 @@ int main(int argc, char *argv[])
 		path = (string)argv[1];
 	
 	StateManager *sm = new StateManager(path);
-	Functor<StateManager> *f = new Functor<StateManager>(sm, &StateManager::navigate);
-	Container *c = new Container(sm,f,200,0,600,525);
+	Functor<StateManager> *f1 = new Functor<StateManager>(sm, &StateManager::navigate);
+	Container *c1 = new Container(sm,f1,200,0,600,525);
 	
-	containers.push_back(c);
+	containers.push_back(c1);
+
+	Functor<StateManager> *f2 = new Functor<StateManager>(sm, &StateManager::backward);
+	Button *back = new Button("<--",f2,0,0,100,15);
+	Functor<Button> *f3 = new Functor<Button>(back, &Button::activate);
+	Container *c2 = new Container(back,f3,0,0,190,600);
+
+	containers.push_back(c2);
 
 	// register display methods
 	glutDisplayFunc(display);

@@ -30,10 +30,6 @@ class Container:public Drawable
 		float originalW;
 		float originalH;
 		
-		float xPos;
-		float yPos;
-		float width;
-		float height;
 		anchor_type anchor;
 		
 		Drawable *content;
@@ -44,17 +40,6 @@ class Container:public Drawable
 		~Container();
 		
 		Drawable* getContent();
-		
-		void setPos(float x, float y);
-		void setPosX(float x);
-		void setPosY(float y);
-		float getPosX();
-		float getPosY();
-		
-		void setWidth(float w);
-		void setHeight(float h);
-		float getWidth();
-		float getHeight();
 		
 		void scale(float x, float y);
 		void translate(float x, float y);

@@ -11,6 +11,62 @@
 
 #include "Drawable.h"
 
+void Drawable::setPosition(float x, float y)
+// Set position. Two coordinates.
+{
+	setPosX(x);
+	setPosY(y);
+}
+
+void Drawable::setPosX(float x)
+// Set only x coord.
+{
+	xPos = x;
+}
+
+void Drawable::setPosY(float y)
+// Set only y coord.
+{
+	yPos = y;
+}
+
+float Drawable::getPosX()
+// Return the object's x coord.
+{
+	return xPos;
+}
+
+float Drawable::getPosY()
+// Return the object's y coord.
+{
+	return yPos;
+}
+		
+
+void Drawable::setWidth(float w)
+// Set the object's width.
+{
+	width = w;
+}
+
+void Drawable::setHeight(float h)
+// Set the object's height.
+{
+	height = h;
+}
+
+float Drawable::getWidth()
+// Return the object's width.
+{
+	return width;
+}
+
+float Drawable::getHeight()
+// Return the object's height.
+{
+	return height;
+}
+
 void Drawable::printGlError()
 // Check to see if there were any gl errors
 {

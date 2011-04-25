@@ -42,7 +42,7 @@ Galaxy::Galaxy(dirnode *r, list<filenode*> *f, cluster_type m, string n)
 	thickness = pow(radius*2.0,.5);
 	
 	setRotation(0,0);
-	setRotationSpeed(0.0);
+	setRotationSpeed(0.02);
 	
 	rotZ = 0;
 	
@@ -270,7 +270,7 @@ void Galaxy::refreshTex()
 
 void Galaxy::draw()
 // Draw the galaxy.
-{	
+{
 	// Set the size and origin of the galaxy, based on the viewport.
 	int p[4];
 	glGetIntegerv(GL_VIEWPORT,p);
@@ -283,27 +283,6 @@ void Galaxy::draw()
 		glRotatef(rotZ,0,0,1);
 		glScalef((side-5)/2,(side-5)/2,1);
 		
-		/*
-		glColor3d(1,1,1);
-		glBegin(GL_LINES);
-			for (list<GSector*>::iterator i = sectors->begin(); i != sectors->end(); i++)
-			{
-				float arc_begin = (*i)->getArcBegin();
-				float arc_begin_r = arc_begin * M_PI/180;
-				float arc_end = (*i)->getArcEnd();
-				float arc_end_r = arc_end * M_PI/180;
-				
-				glVertex2d(0.0,0.0);
-				glVertex2d(cos(arc_begin_r),sin(arc_begin_r));
-
-				glVertex2d(0.0,0.0);
-				glVertex2d(cos(arc_end_r),sin(arc_end_r));
-			}
-		glEnd();		
-		*/
-		
-		//if (selected != NULL) selected->drawMask();
-		
 		// Bind the previously rendered texture.
 		glBindTexture(GL_TEXTURE_2D, texture);
 		glBegin(GL_QUADS);
@@ -313,6 +292,28 @@ void Galaxy::draw()
 			glTexCoord2f(1,1);	glVertex2d(1,1);
 		glEnd();
 		glBindTexture(GL_TEXTURE_2D, 0);
+		
+		if (selected != NULL) selected->drawMask();
+		
+		if (sectors->size() > 1)
+		{
+			glColor3d(1,1,1);
+			glBegin(GL_LINES);
+				for (list<GSector*>::iterator i = sectors->begin(); i != sectors->end(); i++)
+				{
+					float arc_begin = (*i)->getArcBegin();
+					float arc_begin_r = arc_begin * M_PI/180;
+					float arc_end = (*i)->getArcEnd();
+					float arc_end_r = arc_end * M_PI/180;
+
+					glVertex2d(0.0,0.0);
+					glVertex2d(cos(arc_begin_r),sin(arc_begin_r));
+
+					glVertex2d(0.0,0.0);
+					glVertex2d(cos(arc_end_r),sin(arc_end_r));
+				}
+			glEnd();		
+		}
 		
 		glFlush();
 	glPopMatrix();

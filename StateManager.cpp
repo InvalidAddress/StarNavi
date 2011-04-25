@@ -52,9 +52,8 @@ void StateManager::forward()
 void StateManager::backward()
 // Move backwards in history, if possible.
 {
-	curr--;
-	if ((list<Galaxy*>::reverse_iterator)curr == galaxies.rend())
-		curr++;
+	if (curr != galaxies.begin())
+		curr--;
 }
 
 void StateManager::navigate()
@@ -68,6 +67,10 @@ void StateManager::navigate()
 	
 	if (selected != NULL)
 	{
+		list<Galaxy*>::iterator i = curr;
+		i++;
+		galaxies.erase(i, galaxies.end());
+	
 		dirnode *dir = selected->getDirectory();
 		Galaxy *temp;
 		

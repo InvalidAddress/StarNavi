@@ -218,33 +218,21 @@ void GSector::drawMask()
 // Accentuate the sector, by darkening the rest of the galaxy, and drawing a 
 // glowing outline around the sector.
 {
-	glBegin(GL_TRIANGLE_FAN);
+	glBegin(GL_TRIANGLES);
 		float outer = 360-abs(arc_end-arc_begin);
-		for (float i = arc_end;i <= arc_end+outer; i += 5)
+		float i = arc_end;
+		for (float j = i+1;j < arc_end+outer; j += 1)
 		{
-			glColor4d(1,1,1,1);
+			glColor4d(.2,.2,.2,1);
 			glVertex2d(0,0);
-			//glColor4d(0,0,0,1);
+			glColor4d(0,0,0,1);
 			
-			glVertex2d(cos(i*M_PI/180),sin(i*M_PI/180));
-			glVertex2d(cos((i+5)*M_PI/180),sin((i+5)*M_PI/180));
+			glVertex2d(cos(i*M_PI/180.0),sin(i*M_PI/180.0));
+			glVertex2d(cos(j*M_PI/180.0),sin(j*M_PI/180.0));
+			
+			i = j;
 		}
 	glEnd();
-
-/*
-	glBindTexture(GL_TEXTURE_2D, texture);
-
-	glBegin(GL_QUADS);
-		glTexCoord2f(0,1);	glVertex2d(-1,1);
-		glTexCoord2f(0,0);	glVertex2d(-1,-1);
-		glTexCoord2f(1,0);	glVertex2d(1,-1);
-		glTexCoord2f(1,1);	glVertex2d(1,1);
-	glEnd();
-	
-	glFlush();
-	
-	glBindTexture(GL_TEXTURE_2D, 0);
-*/
 }
 
 void GSector::draw()

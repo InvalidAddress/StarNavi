@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		6 April 2011
-// Last Updated:		20 April 2011
+// Last Updated:		25 April 2011
 //
 // File name:			Container.h
 // Programmer:			Matthew Hydock
@@ -41,62 +41,6 @@ Container::~Container()
 Drawable* Container::getContent()
 {
 	return content;
-}
-
-void Container::setPos(float x, float y)
-// Set both the x and y position of the container.
-{
-	setPosX(x);
-	setPosY(y);
-}
-
-void Container::setPosX(float x)
-// Set the x-position of the container's viewport.
-{
-	xPos = x;
-}
-
-void Container::setPosY(float y)
-// Set the y-position of the container's viewport.
-{
-	yPos = y;
-}
-
-float Container::getPosX()
-// Return the x-position of the container's viewport.
-{
-	return xPos;
-}
-
-float Container::getPosY()
-// Return the y-position of the container's viewport.
-{
-	return yPos;
-}
-		
-		
-void Container::setWidth(float w)
-// Set the width of the container.
-{
-	width = w;
-}
-
-void Container::setHeight(float h)
-// Set the height of the container.
-{
-	height = h;
-}
-
-float Container::getWidth()
-// Return the width of the container.
-{
-	return width;
-}
-
-float Container::getHeight()
-// Return the height of the container.
-{
-	return height;
 }
 
 
@@ -144,8 +88,6 @@ bool Container::isColliding(float x, float y)
 void Container::draw()
 // Create the new viewport, set the world mode, and draw the contained object.
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	switch(anchor)
