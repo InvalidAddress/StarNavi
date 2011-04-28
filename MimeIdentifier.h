@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		16 February 2011
-// Last Updated:		18 March 2011
+// Last Updated:		28 April 2011
 //
 // File name:			MimeIdentifier.h
 // Programmer:			Matthew Hydock
@@ -19,6 +19,10 @@
 class MimeIdentifier
 {
 	private:
+		list< vector<string> > default_apps;
+		
+		void buildDefaultAppsList();
+		void setDefaultApp(filenode *f);
 		void setFileType(filenode *f);
 		void enumFileType(filenode *f);
 		

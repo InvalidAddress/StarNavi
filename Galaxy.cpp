@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		20 February 2011
-// Last Updated:		20 April 2011
+// Last Updated:		28 April 2011
 //
 // File name:			Galaxy.h
 // Programmer:			Matthew Hydock
@@ -115,6 +115,9 @@ void Galaxy::buildSectors()
 		buildHierarchy();
 		
 	cout << "sectors built\n";
+	
+	if (sectors->size() == 1)
+		(*(sectors->begin()))->setSingleSectorMode(true);
 }
 
 void Galaxy::buildHierarchy()
@@ -129,6 +132,7 @@ void Galaxy::buildHierarchy()
 	
 	float arc_begin = 0;
 	float arc_end = 360.0*((float)root->files.size()/(float)root->all_files.size());
+	
 	sectors->push_back(new GSector(NULL,&(root->files),radius,arc_begin,arc_end,"./"));
 	cout << "root sector built\n";
 	
@@ -139,7 +143,68 @@ void Galaxy::buildHierarchy()
 		arc_end = arc_begin + 360.0*((float)(*i)->all_files.size()/(float)root->all_files.size());
 		sectors->push_back(new GSector(*i,NULL,radius,arc_begin,arc_end));
 	}
+	
+	//adjustSectorWidths();
 }
+
+void Galaxy::adjustSectorWidths()
+// Dynamically resize the sectors' widths, in case some are too small.
+{
+	cout << endl;
+	
+	list<GSector*> *temp = new list<GSector*>();
+	list<GSector*>::iterator i = sectors->begin();
+	
+	// Sort the sectors into another list.
+	temp->push_back(*i);
+	i++;
+	while (temp->size() < sectors->size())
+	{
+		list<GSector*>::iterator j = temp->begin();
+		while(j != temp->end() && (*i)->getArcWidth() > (*j)->getArcWidth())
+			j++;
+		if (j == temp->end())	temp->push_back(*i);
+		else					temp->insert(j,(*i));
+		i++;
+	}
+	
+	for (list<GSector*>::iterator j = temp->begin(); j != temp->end(); j++)
+		cout << (*j)->getArcWidth() << endl;
+	
+	// If the current sector is too small, grow it and shrink all larger ones.
+	for (i = temp->begin(); i != temp->end() && (*i)->getArcWidth() < ((*i)->calcMinArcWidth()+5); i++)
+	{
+		float diff = ((*i)->calcMinArcWidth()+5)-(*i)->getArcWidth();
+		(*i)->setArcEnd((*i)->getArcEnd()+(diff/2));
+		(*i)->setArcBegin((*i)->getArcBegin()-(diff/2));
+		
+		int remain = 0;
+		for (list<GSector*>::iterator j = i; j != temp->end(); j++)
+			remain++;
+		remain--;
+		
+		float distr = diff/(float)remain;
+		cout << "diff = " << diff << "; remain = " << remain << "; distr = " << distr << endl; 
+		
+		list<GSector*>::iterator j = i;
+		j++;
+		while (j != temp->end())
+		{
+			cout << "shrinking sector " << (*j)->getName() << endl;
+			(*j)->setArcBegin((*j)->getArcBegin()+(distr/2));
+			(*j)->setArcEnd((*j)->getArcEnd()-(distr/2));
+			j++;
+		}
+	}
+	
+	cout << "new sector sizes\n";
+	
+	for (list<GSector*>::iterator j = temp->begin(); j != temp->end(); j++)
+		cout << (*j)->getArcBegin() << "  " << (*j)->getArcEnd() << "  " << (*j)->getArcWidth() << endl;
+	
+	cout << "done resizing." << endl << endl;
+}
+			
 
 void Galaxy::clearSectors()
 {
@@ -160,6 +225,9 @@ list<GSector*>* Galaxy::getSectors()
 //==============================================================================
 
 
+//==============================================================================
+// Miscellanious getters and setters.
+//==============================================================================
 void Galaxy::setMode(cluster_type m)
 // Set the galaxy's clustering mode.
 {
@@ -184,6 +252,45 @@ dirnode* Galaxy::getDirectory()
 {
 	return root;
 }
+//==============================================================================
+
+
+//==============================================================================
+// Methods for user interaction.
+//==============================================================================
+bool Galaxy::isColliding(float x, float y)
+{
+	selected = NULL;
+	
+	float localX = x-xPos;
+	float localY = y-yPos;
+	
+	float angle_r = atan2(localY,localX);
+	float angle_d = angle_r*(180.0/M_PI);
+	float magnitude = sqrt(pow(localX,2.0)+pow(localY,2.0));
+	float norm_mag = magnitude/(side/2);
+
+	angle_d -= rotZ;	
+	angle_d = (angle_d < 0)?angle_d+360:angle_d;
+	
+//	cout << angle_d << ", " << norm_mag << endl;
+	
+	if (norm_mag > 1.0)
+		return collide_flag = false;
+	
+	for (list<GSector*>::iterator i = sectors->begin(); i != sectors->end(); i++)
+		if ((*i)->isColliding(angle_d, norm_mag))
+			selected = (*i);
+		
+	if (selected != NULL) cout << "collide with sector " << selected->getName() << endl;
+	return collide_flag = true;
+}
+
+GSector* Galaxy::getSelected()
+{
+	return selected;	
+}
+//==============================================================================
 
 
 //==============================================================================
@@ -196,9 +303,6 @@ void Galaxy::initTexture()
 //------------------------------------------------------------------------------
 // Set the state of the current texture
 //------------------------------------------------------------------------------
-	// select modulate to mix texture with color for shading
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
@@ -214,6 +318,7 @@ void Galaxy::refreshTex()
 // Update the galaxy texture.
 {
 	tex_size = (int)(1024.0 * (diameter/500.0));
+	tex_size = (tex_size < 512)?512:tex_size;
 
 	cout << diameter << "  " << tex_size << endl;
 
@@ -278,8 +383,17 @@ void Galaxy::draw()
 	xPos = ((float)p[2])/2.0;
 	yPos = ((float)p[3])/2.0;
 
+	// Turn on blending.
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
+	// Turn on texture mode.
+	glEnable(GL_TEXTURE_2D);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
 	glPushMatrix();
 		// Rotate the galaxy 
+		glTranslatef(0,0,-1);
 		glRotatef(rotZ,0,0,1);
 		glScalef((side-5)/2,(side-5)/2,1);
 		
@@ -292,8 +406,15 @@ void Galaxy::draw()
 			glTexCoord2f(1,1);	glVertex2d(1,1);
 		glEnd();
 		glBindTexture(GL_TEXTURE_2D, 0);
-		
-		if (selected != NULL) selected->drawMask();
+	glPopMatrix();
+	
+	// Turn off texture mode.
+	glDisable(GL_TEXTURE_2D);
+	
+	// Draw the sector division lines.
+	glPushMatrix();
+		glRotatef(rotZ,0,0,1);
+		glScalef((side-5)/2,(side-5)/2,1);
 		
 		if (sectors->size() > 1)
 		{
@@ -314,51 +435,20 @@ void Galaxy::draw()
 				}
 			glEnd();		
 		}
-		
-		glFlush();
 	glPopMatrix();
+	
+	// Draw the selection mask.
+	glPushMatrix();
+		glTranslatef(0,0,1);
+		glRotatef(rotZ,0,0,1);
+		glScalef((side)/2,(side)/2,1);
+		if (selected != NULL) selected->drawMask();
+	glPopMatrix();
+	
+	// Turn off blending.
+	glDisable(GL_BLEND);
 	
 	rotZ += rotSpeed;
 		if (rotZ > 360) rotZ -= 360;
-	
-	glFlush();
-}
-//==============================================================================
-
-
-//==============================================================================
-// Checking for mouse-overs/clicking.
-//==============================================================================
-bool Galaxy::isColliding(float x, float y)
-{
-	selected = NULL;
-	
-	float localX = x-xPos;
-	float localY = y-yPos;
-	
-	float angle_r = atan2(localY,localX);
-	float angle_d = angle_r*(180.0/M_PI);
-	float magnitude = sqrt(pow(localX,2.0)+pow(localY,2.0));
-	float norm_mag = magnitude/(side/2);
-
-	angle_d -= rotZ;	
-	angle_d = (angle_d < 0)?angle_d+360:angle_d;
-	
-	cout << angle_d << ", " << norm_mag << endl;
-	
-	if (norm_mag > 1.0)
-		return collide_flag = false;
-	
-	for (list<GSector*>::iterator i = sectors->begin(); i != sectors->end(); i++)
-		if ((*i)->isColliding(angle_d, norm_mag))
-			selected = (*i);
-		
-	if (selected != NULL) cout << "collide with sector " << selected->getName() << endl;
-	return collide_flag = true;
-}
-
-GSector* Galaxy::getSelected()
-{
-	return selected;	
 }
 //==============================================================================

@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		12 March 2011
-// Last Updated:		17 April 2011
+// Last Updated:		28 April 2011
 //
 // File name:			GSector.h
 // Programmer:			Matthew Hydock
@@ -38,7 +38,10 @@ class GSector:public Drawable
 		GLbyte *tex_data;
 		int tex_size;
 		
+		float getMinStarDist(Star *s);
 		void clearStars();
+		
+		bool singleSectorMode;
 		
 	public:
 		GSector(dirnode *r, list<filenode*> *f, float ra, float b, float e, string n = "");
@@ -48,23 +51,31 @@ class GSector:public Drawable
 		void setName(string n);
 		string getName();
 		
+		float getBiggestStarSize();
+		float calcMinArcWidth();
+		
 		void setRadius(float r);
 		void setArcBegin(float b);
-		void SetArcEnd(float e);
+		void setArcEnd(float e);
 		
 		float getRadius();
 		float getArcBegin();
 		float getArcEnd();
+		float getArcWidth();
 		
 		list<filenode*>* getFileList();
 		void setDirectory(dirnode *r);
 		dirnode* getDirectory();
 		
+		void setSingleSectorMode(bool m);
+		bool isSingleSectorMode();
+		
+		void activate();
+		bool isColliding(float x, float y);
+		
 		void buildMask();
 		void drawMask();
 		void draw();
-		
-		bool isColliding(float x, float y);
 };
 
 #endif

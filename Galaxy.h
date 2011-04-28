@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		20 February 2011
-// Last Updated:		17 April 2011
+// Last Updated:		28 April 2011
 //
 // File name:			Galaxy.h
 // Programmer:			Matthew Hydock
@@ -23,8 +23,6 @@ class Galaxy:public Drawable
 {
 	private:
 		// How the galaxy is drawn (external).
-		float xPos;
-		float yPos;
 		float side;
 		
 		// Define the motion and angle of galaxy.
@@ -55,6 +53,11 @@ class Galaxy:public Drawable
 		// How to cluster files in the galaxy.
 		cluster_type mode;
 		
+		void buildSectors();
+		void buildHierarchy();
+		void adjustSectorWidths();
+		void clearSectors();
+		
 	public:
 		Galaxy(dirnode *r, list<filenode*> *f = NULL, cluster_type m = DIRECTORY, string n = "");
 		~Galaxy();
@@ -70,10 +73,6 @@ class Galaxy:public Drawable
 		
 		void setDirectory(dirnode *r);
 		dirnode* getDirectory();
-		
-		void buildSectors();
-		void buildHierarchy();
-		void clearSectors();
 		
 		list<GSector*>* getSectors();
 		

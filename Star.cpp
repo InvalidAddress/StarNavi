@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		15 February 2011
-// Last Updated:		20 April 2011
+// Last Updated:		28 April 2011
 //
 // File name:			Star.cpp
 // Programmer:			Matthew Hydock
@@ -12,7 +12,27 @@
 #include "Star.h"
 
 //==============================================================================
-// Private methods.
+// Constructor/Deconstructor.
+//==============================================================================
+Star::Star(filenode* f)
+// Construct a star, and connect it to a filenode, from which metadata will be
+// pulled and the star's attributes will be defined.
+{
+	file = f;
+	
+	recalc();
+	
+	if (glIsTexture(star_texture) == GL_FALSE)	initTexture();
+}
+
+Star::~Star()
+{
+}
+//==============================================================================
+
+
+//==============================================================================
+// Automatic/private methods.
 //==============================================================================
 void Star::calculateDiameter()
 // Set the radius of the star based on the size of the file.
@@ -44,51 +64,76 @@ void Star::determineColor()
 	}
 }
 
-void Star::texInit()
-// Initialize the global star texture. Cobbled together from bits of code found
-// online and from the OpenGL reference book (sixth edition).
+void Star::recalc()
+// In the case that the file has changed in some way, refresh the star data.
 {
-	ilGenImages(1, &star_texture);
-	ilBindImage(star_texture);
-	ilLoadImage((ILstring)"./images/star2.png");
-	ilutGLBindTexImage();
-	ilDeleteImages(1, &star_texture);
-	
-//------------------------------------------------------------------------------
-// Set the state of the current texture
-//------------------------------------------------------------------------------
-	// select modulate to mix texture with color for shading
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_ADD);
-
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-//------------------------------------------------------------------------------
-}
-//==============================================================================
-
-
-//==============================================================================
-// Public methods.
-//==============================================================================
-Star::Star(filenode* f)
-// Construct a star, and connect it to a filenode, from which metadata will be
-// pulled and the star's attributes will be defined.
-{
-	file = f;
-	
 	calculateDiameter();
 	determineColor();
-	
-	if (glIsTexture(star_texture) == GL_FALSE)	texInit();
 }
+//==============================================================================
 
-Star::~Star()
+
+//==============================================================================
+// State setters.
+//==============================================================================
+void Star::setDiameter(float d)
+// Set the diameter of the star.
 {
+	diameter = d;
 }
 
+void Star::setDistance(float d)
+// Set the distance from the origin.
+{
+	distance = d;
+}
+
+void Star::setAngle(float a)
+// Set the angle around the origin.
+{
+	angle = a;
+}
+
+void Star::setDepth(float d)
+// Set the distance from the camera.
+{
+	depth = d;
+}
+//==============================================================================
+
+
+//==============================================================================
+// State getters.
+//==============================================================================
+float Star::getDiameter()
+// Get the diameter of the star.
+{
+	return diameter;
+}
+
+float Star::getDistance()
+// Get the distance from the origin.
+{
+	return distance;
+}
+
+float Star::getAngle()
+// Get the angle around the origin.
+{
+	return angle;
+}
+
+float Star::getDepth()
+// Get the distance from the camera.
+{
+	return depth;
+}
+//==============================================================================
+
+
+//==============================================================================
+// Convenience methods.
+//==============================================================================
 void Star::randomPosition(float a1, float a2, float dis1, float dis2, float dep1, float dep2)
 // Generate and assign a random position to this star within user defined ranges
 {
@@ -106,21 +151,80 @@ void Star::setPosition(float a, float dis, float dep)
 	distance = dis;
 	depth = dep;
 }
+//==============================================================================
 
-void Star::recalc()
-// In the case that the file has changed in some way, refresh the star data.
+
+//==============================================================================
+// Methods for user interaction.
+//==============================================================================
+void Star::activate()
+// Try to open the file with the default app.
 {
-	calculateDiameter();
-	determineColor();
+	int pid = 0;
+	if ((pid = fork()) == 0)
+	{
+		string f = file->default_app + " \"" + file->path + file->name + "\"";
+		cout << f << endl;
+		system(f.c_str());
+	}
+	else
+		cout << "parent process\n";
+}
+
+bool Star::getCollideFlag()
+{
+	return collide_flag;
+}
+
+bool Star::isColliding(float x, float y)
+// If the mouse is within the perimeter of a star.
+{
+	collide_flag = y <= diameter/2;
+	
+//	cout << y << endl;
+	
+	if (collide_flag)
+		cout << "colliding with file " << file->name << endl;
+	
+	return collide_flag;
+}
+//==============================================================================
+
+
+//==============================================================================
+// Drawing methods.
+//==============================================================================
+void Star::initTexture()
+// Initialize the global star texture. Cobbled together from bits of code found
+// online and from the OpenGL reference book (sixth edition).
+{
+	ilGenImages(1, &star_texture);
+	ilBindImage(star_texture);
+	ilLoadImage((ILstring)"./images/star2.png");
+	ilutGLBindTexImage();
+	ilDeleteImages(1, &star_texture);
+	
+//------------------------------------------------------------------------------
+// Set the state of the current texture
+//------------------------------------------------------------------------------
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+//------------------------------------------------------------------------------
 }
 
 void Star::draw()
 // Draw the star onto the current framebuffer.
 {
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	
+	glEnable(GL_TEXTURE_2D);
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	
 	glBindTexture(GL_TEXTURE_2D, star_texture);
-	
 	glPushMatrix();
-	
 		glRotatef(angle,0,0,1);
 		glTranslatef(distance,0,depth);
 		glScalef(diameter,diameter,1);
@@ -135,4 +239,9 @@ void Star::draw()
 	
 		glFlush();
 	glPopMatrix();
+	glBindTexture(GL_TEXTURE_2D, 0);
+	
+	glDisable(GL_BLEND);
+	glDisable(GL_TEXTURE_2D);
 }
+//==============================================================================

@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		16 February 2011
-// Last Updated:		18 March 2011
+// Last Updated:		28 April 2011
 //
 // File name:			MimeIdentifier.cpp
 // Programmer:			Matthew Hydock
@@ -13,7 +13,42 @@
 
 //==============================================================================
 // Private methods.
-//==============================================================================	
+//==============================================================================
+void MimeIdentifier::buildDefaultAppsList()
+{
+	ifstream default_file("/usr/share/applications/defaults.list");
+	string line;
+	vector<string> toks;
+	
+	// Begin reading lines and looking for the appropriate type.
+	getline(default_file,line);
+	getline(default_file,line);
+	while (!default_file.eof())
+	{
+		cout << line << endl;
+		toks = tokenize(line,"=");
+
+		if (!toks.empty()) default_apps.push_back(toks);
+		
+		getline(default_file,line);
+	}
+	
+	default_file.close();
+}
+
+void MimeIdentifier::setDefaultApp(filenode *f)
+{
+	for (list< vector<string> >::iterator i = default_apps.begin(); i != default_apps.end(); i++)
+		if (f->mimetype.compare((*i)[0]) == 0)
+		{
+			f->default_app = (*i)[1].substr(0,(*i)[1].find_last_of('.'));
+			cout << f->default_app << endl;
+			return;
+		}
+		
+	f->default_app = "gedit";
+}
+
 void MimeIdentifier::setFileType(filenode *f)
 // Seeks through the mime filetype database on the user's computer, and attempts
 // to determine the requested file's filetype.
@@ -38,10 +73,8 @@ void MimeIdentifier::setFileType(filenode *f)
 
 	string temp1 = f->path+f->name;
 	string temp2 = magic_file(magic_cookie, temp1.c_str());
-	if (temp2.find_first_of("binary") != string::npos)
-		f->mimetype = temp2.substr(0,temp2.find_first_of('/'));
-	else
-		f->mimetype = "binary";
+
+	f->mimetype = temp2.substr(0,temp2.find_first_of(';'));
 		
 	magic_close(magic_cookie);
 }
@@ -49,19 +82,21 @@ void MimeIdentifier::setFileType(filenode *f)
 void MimeIdentifier::enumFileType(filenode *f)
 // Take a string representation of a file type, and turn it into an enumeration.
 {
-	if ((f->mimetype).compare("") == 0)	
+	string type = f->mimetype.substr(0,f->mimetype.find_first_of('/'));
+
+	if (type.compare("") == 0)	
 		f->mime_enum = UNKNOWN;
-	else if ((f->mimetype).compare("binary") == 0)
+	else if (type.compare("binary") == 0)
 		f->mime_enum = BIN;
-	else if ((f->mimetype).compare("application") == 0)
+	else if (type.compare("application") == 0)
 		f->mime_enum = APP;
-	else if ((f->mimetype).compare("audio") == 0)
+	else if (type.compare("audio") == 0)
 		f->mime_enum = AUDIO;
-	else if ((f->mimetype).compare("image") == 0)
+	else if (type.compare("image") == 0)
 		f->mime_enum = IMAGE;
-	else if ((f->mimetype).compare("text") == 0)
+	else if (type.compare("text") == 0)
 		f->mime_enum = TEXT;
-	else if ((f->mimetype).compare("video") == 0)
+	else if (type.compare("video") == 0)
 		f->mime_enum = VIDEO;
 	else	
 		f->mime_enum = UNKNOWN;
@@ -75,6 +110,7 @@ void MimeIdentifier::enumFileType(filenode *f)
 MimeIdentifier::MimeIdentifier()
 // errm, do nothing?
 {
+	buildDefaultAppsList();
 }
 
 void MimeIdentifier::obtainType(filenode *f)
@@ -82,5 +118,7 @@ void MimeIdentifier::obtainType(filenode *f)
 {
 	setFileType(f);
 	enumFileType(f);
+	
+	setDefaultApp(f);
 }
 //==============================================================================

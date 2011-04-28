@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		6 April 2011
-// Last Updated:		20 April 2011
+// Last Updated:		28 April 2011
 //
 // File name:			StateManager.h
 // Programmer:			Matthew Hydock
@@ -60,13 +60,16 @@ void StateManager::navigate()
 // If a sector in the current directory has been selected, make it into a
 // galaxy, and make that galaxy the currently displayed one.
 {
-	if ((*curr)->getSectors()->size() == 1)
-		return;
-		
 	GSector* selected = (*curr)->getSelected();
 	
 	if (selected != NULL)
 	{
+		if ((*curr)->getSectors()->size() == 1)
+		{
+			selected->activate();
+			return;
+		}
+	
 		list<Galaxy*>::iterator i = curr;
 		i++;
 		galaxies.erase(i, galaxies.end());

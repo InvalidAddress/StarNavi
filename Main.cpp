@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		14 February 2011
-// Last Updated:		17 April 2011
+// Last Updated:		28 April 2011
 //
 // File name:			MainClass.cpp
 // Programmer:			Matthew Hydock
@@ -11,6 +11,7 @@
 //==============================================================================
 
 #include <GL/glut.h>
+#include <SDL/SDL_ttf.h>
 #include "Container.h"
 #include "StateManager.h"
 #include "Button.h"
@@ -36,14 +37,15 @@ void init()
 	glDepthMask(GL_TRUE);
 	
 	glEnable(GL_TEXTURE_2D);
-	glEnable(GL_ALPHA_TEST);
-	glAlphaFunc(GL_GREATER,0.01);
 	
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	
 	ilInit();
 	iluInit();
 	ilutRenderer(ILUT_OPENGL);
+	
+	if (TTF_Init() == -1)
+		exit(1);
 }
 
 void display()

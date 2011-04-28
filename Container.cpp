@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		6 April 2011
-// Last Updated:		25 April 2011
+// Last Updated:		28 April 2011
 //
 // File name:			Container.h
 // Programmer:			Matthew Hydock
@@ -72,6 +72,14 @@ void Container::translate(float x, float y)
 	yPos = originalY + y;
 }
 
+
+void Container::activate()
+// Call the container's functor.
+{
+	if (act != NULL)
+		act->Call();
+}
+	
 		
 bool Container::isColliding(float x, float y)
 // Check if mouse is colliding with container. If so, set flag, and see if the
@@ -92,15 +100,15 @@ void Container::draw()
 	glLoadIdentity();
 	switch(anchor)
 	{
-		case CENTER			: gluOrtho2D(-width/2,width/2,-height/2,height/2);
+		case CENTER			: glOrtho(-width/2,width/2,-height/2,height/2,-100,100);
 							  break;
-		case LEFT_UPPER		: gluOrtho2D(0,width,-height,0);
+		case LEFT_UPPER		: glOrtho(0,width,-height,0,-100,100);
 							  break;
-		case RIGHT_UPPER	: gluOrtho2D(-width,0,-height,0);
+		case RIGHT_UPPER	: glOrtho(-width,0,-height,0,-100,100);
 							  break;
-		case RIGHT_LOWER	: gluOrtho2D(-width,0,0,height);
+		case RIGHT_LOWER	: glOrtho(-width,0,0,height,-100,100);
 							  break;
-		case LEFT_LOWER		: gluOrtho2D(0,width,0,height);
+		case LEFT_LOWER		: glOrtho(0,width,0,height,-100,100);
 							  break;
 	}	
 	glMatrixMode(GL_MODELVIEW);
@@ -109,29 +117,37 @@ void Container::draw()
 	
 	glViewport(xPos,yPos,width,height);
 	
-	glBegin(GL_LINES);
-		glColor3d(1,1,1);
+	glPushMatrix();
+		glBegin(GL_LINES);
+			switch(anchor)
+			{
+				case LEFT_UPPER		: glTranslatef(width/2,-height/2,0);
+									  break;
+				case RIGHT_UPPER	: glTranslatef(-width/2,-height/2,0);
+									  break;
+				case RIGHT_LOWER	: glTranslatef(-width/2,height/2,0);
+									  break;
+				case LEFT_LOWER		: glTranslatef(width/2,height/2,0);
+									  break;
+			}	
 		
-		glVertex2d(-(float)width/2.0,(float)height/2.0);
-		glVertex2d((float)width/2.0,(float)height/2.0);
-		
-		glVertex2d((float)width/2.0,(float)height/2.0);
-		glVertex2d((float)width/2.0,-(float)height/2.0);
-		
-		glVertex2d((float)width/2.0,-(float)height/2.0);
-		glVertex2d(-(float)width/2.0,-(float)height/2.0);
-		
-		glVertex2d(-(float)width/2.0,-(float)height/2.0);
-		glVertex2d(-(float)width/2.0,(float)height/2.0);
-	glEnd();
+			glColor3d(1,1,1);
+			
+			glVertex3d(-(float)width/2.0,(float)height/2.0,100);
+			glVertex3d((float)width/2.0,(float)height/2.0,100);
+			
+			glVertex3d((float)width/2.0,(float)height/2.0,100);
+			glVertex3d((float)width/2.0,-(float)height/2.0,100);
+			
+			glVertex3d((float)width/2.0,-(float)height/2.0,100);
+			glVertex3d(-(float)width/2.0,-(float)height/2.0,100);
+			
+			glVertex3d(-(float)width/2.0,-(float)height/2.0,100);
+			glVertex3d(-(float)width/2.0,(float)height/2.0,100);
+		glEnd();
+	glPopMatrix();
 	
 	content->draw();
 	
 	collide_flag = false;
-}
-
-void Container::activate()
-{
-	if (act != NULL)
-		act->Call();
 }

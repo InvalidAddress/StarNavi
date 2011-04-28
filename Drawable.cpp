@@ -1,12 +1,12 @@
 //==============================================================================
 // Date Created:		17 April 2011
-// Last Updated:		17 April 2011
+// Last Updated:		25 April 2011
 //
 // File name:			Drawable.cpp
 // Programmer:			Matthew Hydock
 //
-// File description:	Methods for an abstract class. Removed from the header
-//						file because I was getting compile errors.
+// File description:	Methods for an abstract class. Removes a lot of
+//						duplicate code, especially from container-type objects.
 //==============================================================================
 
 #include "Drawable.h"

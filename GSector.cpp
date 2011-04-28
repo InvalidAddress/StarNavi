@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		18 March 2011
-// Last Updated:		6 April 2011
+// Last Updated:		27 April 2011
 //
 // File name:			GSector.h
 // Programmer:			Matthew Hydock
@@ -30,6 +30,8 @@ GSector::GSector(dirnode *r, list<filenode*> *f, float ra, float b, float e, str
 		name = root->name;
 	else
 		name = n;
+	
+	singleSectorMode = false;
 	
 	radius = ra;
 	
@@ -63,8 +65,23 @@ void GSector::buildStars()
 	{
 		Star *temp = new Star(*i);
 		temp->randomPosition(arc_begin,arc_end,0,radius,-thickness,thickness);
+		if (temp->getDistance()+(temp->getDiameter()/2) > radius)
+			temp->setDistance(radius-(temp->getDiameter()/2));
 		stars->push_back(temp);
 	}
+}
+
+//float GSector::getStarWidth()
+
+float GSector::getMinStarDist(Star *s)
+{	
+	// Check if the chord length at this star's distance is long enough to
+	// accomodate the star's diameter.
+	float width = getArcWidth()*(M_PI/180);
+	float chord = 2*sin(width/2);
+	float lower_bound = s->getDiameter()/chord;
+
+	return lower_bound;
 }
 
 void GSector::clearStars()
@@ -73,7 +90,7 @@ void GSector::clearStars()
 	if (stars != NULL)
 	{
 		for (list<Star*>::iterator i = stars->begin(); i != stars->end(); i++)
-			delete (*i);
+			stars->erase(i);
 		delete (stars);
 	}
 }
@@ -92,6 +109,31 @@ string GSector::getName()
 //==============================================================================
 // Methods that work with the dimensions of the sector.
 //==============================================================================
+float GSector::getBiggestStarSize()
+// Get the diameter of the largest star in the sector.
+{
+	float d = 0;
+	
+	for (list<Star*>::iterator i = stars->begin(); i != stars->end(); i++)
+		if ((*i)->getDiameter() > d)
+			d = (*i)->getDiameter();
+	
+	return d;
+}
+
+float GSector::calcMinArcWidth()
+// Returns the smallest possible arc width, in degrees.
+{
+	float d = getBiggestStarSize();		// get the size of the largest star,
+										// which will act as a chord.
+	float crd = d/radius;				// normalize the length of the chord.
+	
+	float theta = asin(crd/2)*2;
+	theta *= 180.0/M_PI;
+	
+	return theta;
+}
+
 void GSector::setRadius(float r)
 {
 	radius = r;
@@ -102,7 +144,7 @@ void GSector::setArcBegin(float b)
 	arc_begin = b;
 }
 
-void GSector::SetArcEnd(float e)
+void GSector::setArcEnd(float e)
 {
 	arc_end = e;
 }
@@ -121,8 +163,17 @@ float GSector::getArcEnd()
 {
 	return arc_end;
 }
+
+float GSector::getArcWidth()
+{
+	return (arc_end-arc_begin);
+}
 //==============================================================================
 
+
+//==============================================================================
+// File node related methods.
+//==============================================================================
 list<filenode*>* GSector::getFileList()
 // Return the sector's file list. Use this only if getDirectory returns NULL.
 {
@@ -142,78 +193,74 @@ dirnode* GSector::getDirectory()
 	if (root == NULL) cout << "sector root is null!\n";
 	return root;
 }
+//==============================================================================
 
 
-void GSector::buildMask()
+//==============================================================================
+// Methods for user interactions.
+//==============================================================================
+void GSector::setSingleSectorMode(bool m)
 {
-	tex_size = (int)(1024.0 * (radius*2/500.0));
-
-	cout << radius*2 << "  " << tex_size << endl;
-
-	// Create a depth buffer for the framebuffer object.
-	GLuint fbo_depth;
-	glGenRenderbuffers(1, &fbo_depth);
-	glBindRenderbuffer(GL_RENDERBUFFER, fbo_depth);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, tex_size, tex_size);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, fbo_depth);
-
-	printGlError();
-
-	// Prepare the texture for rendering.
-	glBindTexture(GL_TEXTURE_2D, texture);
-	if (tex_data = NULL) delete(tex_data);
-	tex_data = new GLbyte[tex_size*tex_size*4];
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex_size, tex_size, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_data);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	
-	printGlError();
-	
-	// Create and bind the frame buffer object.
-	GLuint fbo;
-	glGenFramebuffers(1, &fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, fbo_depth);
-	
-	//printFramebufferError();
-
-	// Push the viewport to an attribute stack, and render as usual.
-	glPushAttrib(GL_VIEWPORT_BIT);
-		glViewport(0,0,tex_size,tex_size);
-
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glOrtho(-radius,radius,-radius,radius,-thickness,thickness);
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-		glBegin(GL_TRIANGLES);
-			glColor4d(0,0,0,.75);
-			float outer = 360-(arc_end-arc_begin);
-			float i = arc_end;
-			for (float j = i+10; j <= arc_end+outer; j += 10)
-			{
-				glVertex3d(0,0,1);
-				glVertex3d((radius+50)*cos(i),(radius+50)*sin(i),1);
-				glVertex3d((radius+50)*cos(j),(radius+50)*sin(j),1);
-				i = j;
-			}
-			glVertex3d(0,0,1);
-			glVertex3d((radius+50)*cos(i),(radius+50)*sin(i),1);
-			glVertex3d((radius+50)*cos(arc_end+outer),(radius+50)*sin(arc_end+outer),1);
-		glEnd();
-			
-		glFlush();
-	glPopAttrib();
-	
-	// Release the buffers, and return to the defaults.
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	singleSectorMode = m;
 }
+
+bool GSector::isSingleSectorMode()
+{
+	return singleSectorMode;
+}
+
+void GSector::activate()
+{
+	list<Star*> active;
+	for (list<Star*>::iterator i = stars->begin(); i != stars->end(); i++)
+		if ((*i)->getCollideFlag())
+			active.push_back(*i);
+			
+	Star *curr;
+	float near = -100;
+	for (list<Star*>::iterator i = active.begin(); i != active.end(); i++)
+	{
+		if ((*i)->getDepth() > near)
+		{
+			curr = *i;
+			near = (*i)->getDepth();
+		}
+	}
+	
+	curr->activate();
+}
+
+bool GSector::isColliding(float x, float y)
+// X and Y are actually polar coordinates in this case.
+{
+	if (singleSectorMode)
+	{
+		float t_x = y*radius*cos(x*(M_PI/180));
+		float t_y = y*radius*sin(x*(M_PI/180));
+	
+//		cout << t_x << ", " << t_y << endl;
+	
+		for (list<Star*>::iterator i = stars->begin(); i != stars->end(); i++)
+		{
+			float s_x = (*i)->getDistance()*cos((*i)->getAngle()*(M_PI/180));
+			float s_y = (*i)->getDistance()*sin((*i)->getAngle()*(M_PI/180));
 		
+			float r_x = t_x-s_x;
+			float r_y = t_y-s_y;
+//			cout << r_x << ", " << r_y << endl;
+		
+			(*i)->isColliding(0,sqrt(pow(r_x,2.0)+pow(r_y,2.0)));
+		}
+	}
+	
+	return collide_flag = (x >= arc_begin) && (x <= arc_end) && (y <= 1.0);
+}
+//==============================================================================
+
+
+//==============================================================================
+// Drawing methods.
+//==============================================================================		
 void GSector::drawMask()
 // Accentuate the sector, by darkening the rest of the galaxy, and drawing a 
 // glowing outline around the sector.
@@ -223,10 +270,10 @@ void GSector::drawMask()
 		float i = arc_end;
 		for (float j = i+1;j < arc_end+outer; j += 1)
 		{
-			glColor4d(.2,.2,.2,1);
+			glColor4d(.2,.2,.2,.5);
 			glVertex2d(0,0);
-			glColor4d(0,0,0,1);
-			
+			glColor4d(0,0,0,.5);
+
 			glVertex2d(cos(i*M_PI/180.0),sin(i*M_PI/180.0));
 			glVertex2d(cos(j*M_PI/180.0),sin(j*M_PI/180.0));
 			
@@ -240,10 +287,4 @@ void GSector::draw()
 	for (list<Star*>::iterator i = stars->begin(); i != stars->end(); i++)
 		(*i)->draw();
 }
-
-bool GSector::isColliding(float x, float y)
-// X and Y are actually polar coordinates in this case.
-{
-	return collide_flag = (x >= arc_begin) && (x <= arc_end) && (y <= 1.0);
-}
-		
+//==============================================================================	
