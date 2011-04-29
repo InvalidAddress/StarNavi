@@ -71,8 +71,6 @@ void GSector::buildStars()
 	}
 }
 
-//float GSector::getStarWidth()
-
 float GSector::getMinStarDist(Star *s)
 {	
 	// Check if the chord length at this star's distance is long enough to

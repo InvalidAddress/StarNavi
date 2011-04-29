@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		20 February 2011
-// Last Updated:		25 April 2011
+// Last Updated:		29 April 2011
 //
 // File name:			Container.h
 // Programmer:			Matthew Hydock
@@ -47,11 +47,10 @@ class Container:public Drawable
 		void setAnchor(anchor_type a);
 		anchor_type getAnchor();
 		
+		void activate();
 		bool isColliding(float x, float y);
 		
 		void draw();
-		
-		void activate();
 };
 
 #endif
