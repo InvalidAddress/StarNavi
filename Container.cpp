@@ -121,6 +121,7 @@ void Container::draw()
 		glBegin(GL_LINES);
 			switch(anchor)
 			{
+				case CENTER			: break;
 				case LEFT_UPPER		: glTranslatef(width/2,-height/2,0);
 									  break;
 				case RIGHT_UPPER	: glTranslatef(-width/2,-height/2,0);

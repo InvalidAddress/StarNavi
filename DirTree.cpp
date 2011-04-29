@@ -17,19 +17,19 @@
 DirTree::DirTree(string dir = "./")
 // Creates a directory tree with the root node at dir.
 {
-	//cout << "making a dirtree\n";
+	cout << "making a dirtree\n";
 	
 	root = new dirnode;
 	mrmime = new MimeIdentifier();
 	numfiles = 0;
 	
-	//cout << "made the mime identifier\n";
+	cout << "made the mime identifier\n";
 	
 	if (dir.compare("./") != 0)	
 		root->name = dir;
 	else
 	{
-		//cout << "trying to identify directory\n";
+		cout << "trying to identify directory\n";
 		char *currpath = getcwd(NULL, PATH_MAX);
 		if (currpath != NULL)
 			root->name = (string)currpath;
@@ -45,7 +45,7 @@ DirTree::DirTree(string dir = "./")
 		root->name.push_back('/');
 	
 	cout << "starting in: " << root->name << endl;	
-	//cout << "dirtree made\n";
+	cout << "dirtree made\n";
 }
 
 
@@ -74,7 +74,7 @@ void DirTree::add(string p, string n)
 	stat(temp_string.c_str(), &(tempf->attr));
 	mrmime->obtainType(tempf);
 	
-	//cout << tempf->path << tempf->name << endl;
+	cout << tempf->path << tempf->name << endl;
 	
 	// Tokenize the given path, and store in an array.
 	vector<string> path_toks = tokenize(p.substr((root->name).size()),"/");
@@ -85,7 +85,7 @@ void DirTree::add(string p, string n)
 	list<dirnode*>::iterator d = currnode->dirs.begin();
 	
 	// While there are still more paths to navigate...
-	for (int i = 0; i < path_toks.size();)
+	for (size_t i = 0; i < path_toks.size();)
 	{
 		// Scan the directory list for the current directory.
 		for (;d != currnode->dirs.end() && strcmp(path_toks[i].c_str(),(*d)->name.c_str()) != 0 && !isLessThan(path_toks[i],(*d)->name);d++);
@@ -114,7 +114,7 @@ void DirTree::add(string p, string n)
 	currnode->files.push_back(tempf);
 	currnode->all_files.push_back(tempf);
 	
-	//cout << "file added to dirtree\n";
+	cout << "file added to dirtree\n";
 	numfiles++;
 }
 
@@ -130,7 +130,7 @@ dirnode* DirTree::getDir(string p)
 	list<dirnode*>::iterator d = currnode->dirs.begin();
 	
 	// While there are still more paths to navigate...
-	for (int i = 0; i < path_toks.size();)
+	for (size_t i = 0; i < path_toks.size();)
 	{
 		// Scan the directory list for the current directory.
 		for (;d != currnode->dirs.end() && strcmp(path_toks[i].c_str(),(*d)->name.c_str()) != 0 && !isLessThan(path_toks[i],(*d)->name);d++);

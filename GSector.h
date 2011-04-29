@@ -23,7 +23,7 @@ class GSector:public Drawable
 	private:
 		// Real dimensions of the sector.
 		float arc_begin;
-		float arc_end;
+		float arc_width;
 		float radius;
 		float thickness;
 		
@@ -44,7 +44,7 @@ class GSector:public Drawable
 		bool singleSectorMode;
 		
 	public:
-		GSector(dirnode *r, list<filenode*> *f, float ra, float b, float e, string n = "");
+		GSector(dirnode *r, list<filenode*> *f, float ra, float b, float w, string n = "");
 		~GSector();
 		void buildStars();
 		
@@ -56,7 +56,7 @@ class GSector:public Drawable
 		
 		void setRadius(float r);
 		void setArcBegin(float b);
-		void setArcEnd(float e);
+		void setArcWidth(float e);
 		
 		float getRadius();
 		float getArcBegin();

@@ -33,7 +33,7 @@ Button::~Button()
 void Button::buildText()
 {
 	TTF_Font *font = TTF_OpenFont("/usr/share/fonts/truetype/freefont/FreeSans.ttf",12);
-	SDL_Color Color = {255,255,255};
+	SDL_Color Color = {255,255,255,255};
 	buffer = TTF_RenderText_Blended(const_cast<TTF_Font*>(font), label.c_str(), Color);
 
 	text_w = buffer->w;
@@ -102,6 +102,8 @@ bool Button::isColliding(float x, float y)
 		cout << "colliding with button " << label << endl;
 		activate();
 	}
+	
+	return collide_flag;
 }	
 
 

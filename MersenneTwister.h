@@ -67,16 +67,16 @@
 #include <ctime>
 #include <cmath>
 
+static const unsigned int N = 624;
+static const unsigned int SAVE = N+1;
+static const unsigned int M = 397;
+
 class MTRand {
 // Data
 public:
 	typedef unsigned long uint32;  // unsigned integer type, at least 32 bits
 	
-	enum { N = 624 };       // length of state vector
-	enum { SAVE = N + 1 };  // length of array for save()
-
 protected:
-	enum { M = 397 };  // period parameter
 	
 	uint32 state[N];   // internal state
 	uint32 *pNext;     // next value to get from state
@@ -172,7 +172,7 @@ inline void MTRand::initialize( const uint32 seed )
 	// only MSBs of the state array.  Modified 9 Jan 2002 by Makoto Matsumoto.
 	register uint32 *s = state;
 	register uint32 *r = state;
-	register int i = 1;
+	register uint32 i = 1;
 	*s++ = seed & 0xffffffffUL;
 	for( ; i < N; ++i )
 	{
@@ -213,13 +213,12 @@ inline void MTRand::seed( uint32 *const bigSeed, const uint32 seedLength )
 	// in each element are discarded.
 	// Just call seed() if you want to get array from /dev/urandom
 	initialize(19650218UL);
-	register int i = 1;
+	register uint32 i = 1;
 	register uint32 j = 0;
 	register int k = ( N > seedLength ? N : seedLength );
 	for( ; k; --k )
 	{
-		state[i] =
-		state[i] ^ ( (state[i-1] ^ (state[i-1] >> 30)) * 1664525UL );
+		state[i] ^= ( (state[i-1] ^ (state[i-1] >> 30)) * 1664525UL );
 		state[i] += ( bigSeed[j] & 0xffffffffUL ) + j;
 		state[i] &= 0xffffffffUL;
 		++i;  ++j;
@@ -383,7 +382,7 @@ inline void MTRand::load( uint32 *const loadArray )
 inline std::ostream& operator<<( std::ostream& os, const MTRand& mtrand )
 {
 	register const MTRand::uint32 *s = mtrand.state;
-	register int i = mtrand.N;
+	register int i = N;
 	for( ; i--; os << *s++ << "\t" ) {}
 	return os << mtrand.left;
 }
@@ -391,10 +390,10 @@ inline std::ostream& operator<<( std::ostream& os, const MTRand& mtrand )
 inline std::istream& operator>>( std::istream& is, MTRand& mtrand )
 {
 	register MTRand::uint32 *s = mtrand.state;
-	register int i = mtrand.N;
+	register int i = N;
 	for( ; i--; is >> *s++ ) {}
 	is >> mtrand.left;
-	mtrand.pNext = &mtrand.state[mtrand.N-mtrand.left];
+	mtrand.pNext = &mtrand.state[N-mtrand.left];
 	return is;
 }
 

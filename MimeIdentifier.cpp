@@ -25,7 +25,6 @@ void MimeIdentifier::buildDefaultAppsList()
 	getline(default_file,line);
 	while (!default_file.eof())
 	{
-		cout << line << endl;
 		toks = tokenize(line,"=");
 
 		if (!toks.empty()) default_apps.push_back(toks);
@@ -42,7 +41,6 @@ void MimeIdentifier::setDefaultApp(filenode *f)
 		if (f->mimetype.compare((*i)[0]) == 0)
 		{
 			f->default_app = (*i)[1].substr(0,(*i)[1].find_last_of('.'));
-			cout << f->default_app << endl;
 			return;
 		}
 		

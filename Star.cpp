@@ -160,15 +160,20 @@ void Star::setPosition(float a, float dis, float dep)
 void Star::activate()
 // Try to open the file with the default app.
 {
-	int pid = 0;
-	if ((pid = fork()) == 0)
-	{
-		string f = file->default_app + " \"" + file->path + file->name + "\"";
-		cout << f << endl;
-		system(f.c_str());
-	}
-	else
-		cout << "parent process\n";
+	string f = file->default_app + " \"" + file->path + file->name + "\"";
+	cout << f << endl;
+	cout << "Launching child process" << endl;
+	system(f.c_str());
+	cout << "Child process complete" << endl;
+
+//	int pid = fork();
+//	if (pid == 0)
+//	{
+//		cout << f << endl;
+//		cout << "Child process compl
+//	}
+//	else
+//		cout << "parent process\n";
 }
 
 bool Star::getCollideFlag()

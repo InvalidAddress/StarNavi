@@ -14,7 +14,7 @@
 
 #include "GSector.h"
 
-GSector::GSector(dirnode *r, list<filenode*> *f, float ra, float b, float e, string n)
+GSector::GSector(dirnode *r, list<filenode*> *f, float ra, float b, float w, string n)
 // Creates a sector, with a list of files and the given dimensions. Can take a
 // dirnode for hierarchical functionality, but it is not necessary.
 {	
@@ -36,9 +36,9 @@ GSector::GSector(dirnode *r, list<filenode*> *f, float ra, float b, float e, str
 	radius = ra;
 	
 	arc_begin = b;
-	arc_end = e;
+	arc_width = w;
 	
-	cout << arc_begin << " , " << arc_end << endl;
+	cout << arc_begin << " , " << arc_width << endl;
 	
 	thickness = pow(radius*2,.5);
 	
@@ -64,7 +64,7 @@ void GSector::buildStars()
 	for (list<filenode*>::iterator i = files->begin(); i != files->end(); i++)
 	{
 		Star *temp = new Star(*i);
-		temp->randomPosition(arc_begin,arc_end,0,radius,-thickness,thickness);
+		temp->randomPosition(getArcBegin(),getArcEnd(),0,radius,-thickness,thickness);
 		if (temp->getDistance()+(temp->getDiameter()/2) > radius)
 			temp->setDistance(radius-(temp->getDiameter()/2));
 		stars->push_back(temp);
@@ -144,9 +144,9 @@ void GSector::setArcBegin(float b)
 	arc_begin = b;
 }
 
-void GSector::setArcEnd(float e)
+void GSector::setArcWidth(float w)
 {
-	arc_end = e;
+	arc_width = w;
 }
 
 float GSector::getRadius()
@@ -161,12 +161,12 @@ float GSector::getArcBegin()
 
 float GSector::getArcEnd()
 {
-	return arc_end;
+	return arc_begin+arc_width;
 }
 
 float GSector::getArcWidth()
 {
-	return (arc_end-arc_begin);
+	return arc_width;
 }
 //==============================================================================
 
@@ -253,7 +253,7 @@ bool GSector::isColliding(float x, float y)
 		}
 	}
 	
-	return collide_flag = (x >= arc_begin) && (x <= arc_end) && (y <= 1.0);
+	return collide_flag = (x >= getArcBegin()) && (x <= getArcEnd()) && (y <= 1.0);
 }
 //==============================================================================
 
@@ -266,7 +266,8 @@ void GSector::drawMask()
 // glowing outline around the sector.
 {
 	glBegin(GL_TRIANGLES);
-		float outer = 360-abs(arc_end-arc_begin);
+		float outer = 360-abs(arc_width);
+		float arc_end = getArcEnd();
 		float i = arc_end;
 		for (float j = i+1;j < arc_end+outer; j += 1)
 		{

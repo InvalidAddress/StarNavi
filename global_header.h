@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <time.h>
 
 //C++ includes
 #include <iostream>
@@ -33,7 +34,7 @@
 #elif defined VList
 #define list vector<t>
 #endif
- 
+
 #include "MersenneTwister.h"
 #include "Functors.h"
 
@@ -55,7 +56,7 @@ extern inline bool isLessThan(string s1, string s2)
 	
 	// Compare the strings one letter at a time. Quit early if s1 is less than
 	// s2. Also, keep track of the equality of the strings.
-	for (int i = 0; i < s1.size()-1 && i < s2.size()-1 && diff == 0; i++)
+	for (size_t i = 0; i < s1.size()-1 && i < s2.size()-1 && diff == 0; i++)
 		diff = toLower(s1.at(i)) - toLower(s2.at(i));
 	
 	// If the strings appear equal but s1 is smaller than s2, then s1 is less

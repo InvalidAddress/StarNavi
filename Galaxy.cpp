@@ -131,20 +131,20 @@ void Galaxy::buildHierarchy()
 	}
 	
 	float arc_begin = 0;
-	float arc_end = 360.0*((float)root->files.size()/(float)root->all_files.size());
+	float arc_width = 360.0*((float)root->files.size()/(float)root->all_files.size());
 	
-	sectors->push_back(new GSector(NULL,&(root->files),radius,arc_begin,arc_end,"./"));
+	sectors->push_back(new GSector(NULL,&(root->files),radius,arc_begin,arc_width,"./"));
 	cout << "root sector built\n";
 	
 	cout << "creating sectors for directories\n";
 	for (list<dirnode*>::iterator i = root->dirs.begin(); i != root->dirs.end(); i++)
 	{
-		arc_begin = arc_end;
-		arc_end = arc_begin + 360.0*((float)(*i)->all_files.size()/(float)root->all_files.size());
-		sectors->push_back(new GSector(*i,NULL,radius,arc_begin,arc_end));
+		arc_begin += arc_width;
+		arc_width = 360.0*((float)(*i)->all_files.size()/(float)root->all_files.size());
+		sectors->push_back(new GSector(*i,NULL,radius,arc_begin,arc_width));
 	}
 	
-	//adjustSectorWidths();
+	adjustSectorWidths();
 }
 
 void Galaxy::adjustSectorWidths()
@@ -167,6 +167,7 @@ void Galaxy::adjustSectorWidths()
 		else					temp->insert(j,(*i));
 		i++;
 	}
+	// Done sorting the sectors.
 	
 	for (list<GSector*>::iterator j = temp->begin(); j != temp->end(); j++)
 		cout << (*j)->getArcWidth() << endl;
@@ -175,8 +176,7 @@ void Galaxy::adjustSectorWidths()
 	for (i = temp->begin(); i != temp->end() && (*i)->getArcWidth() < ((*i)->calcMinArcWidth()+5); i++)
 	{
 		float diff = ((*i)->calcMinArcWidth()+5)-(*i)->getArcWidth();
-		(*i)->setArcEnd((*i)->getArcEnd()+(diff/2));
-		(*i)->setArcBegin((*i)->getArcBegin()-(diff/2));
+		(*i)->setArcWidth((*i)->getArcWidth()+diff);
 		
 		int remain = 0;
 		for (list<GSector*>::iterator j = i; j != temp->end(); j++)
@@ -191,11 +191,23 @@ void Galaxy::adjustSectorWidths()
 		while (j != temp->end())
 		{
 			cout << "shrinking sector " << (*j)->getName() << endl;
-			(*j)->setArcBegin((*j)->getArcBegin()+(distr/2));
-			(*j)->setArcEnd((*j)->getArcEnd()-(distr/2));
+			(*j)->setArcWidth((*j)->getArcWidth()-distr);
 			j++;
 		}
 	}
+	// Done shrinking the sectors.
+	
+	// Shift all of the sectors into proper positions
+	list<GSector*>::iterator j = sectors->begin();
+	list<GSector*>::iterator k = sectors->begin();
+	
+	k++;
+	for(;k != sectors->end(); k++)
+	{
+		(*k)->setArcBegin((*j)->getArcEnd());
+		j = k;
+	}
+	// Done shifting sectors.
 	
 	cout << "new sector sizes\n";
 	
@@ -204,7 +216,7 @@ void Galaxy::adjustSectorWidths()
 	
 	cout << "done resizing." << endl << endl;
 }
-			
+		
 
 void Galaxy::clearSectors()
 {
@@ -333,7 +345,7 @@ void Galaxy::refreshTex()
 
 	// Prepare the texture for rendering.
 	glBindTexture(GL_TEXTURE_2D, texture);
-	if (tex_data = NULL) delete(tex_data);
+	if (tex_data == NULL) delete(tex_data);
 	tex_data = new GLbyte[tex_size*tex_size*4];
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex_size, tex_size, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_data);
 	glBindTexture(GL_TEXTURE_2D, 0);
