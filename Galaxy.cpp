@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		20 February 2011
-// Last Updated:		28 April 2011
+// Last Updated:		3 May 2011
 //
 // File name:			Galaxy.h
 // Programmer:			Matthew Hydock
@@ -43,17 +43,15 @@ Galaxy::Galaxy(dirnode *r, list<filenode*> *f, cluster_type m, string n)
 	
 	setRotation(0,0);
 	setRotationSpeed(0.02);
-	
 	rotZ = 0;
 	
-	mode = DIRECTORY;
+	mode = m;
 	
 	sectors = NULL;
 	selected = NULL;
 	buildSectors();
 	
 	tex_data = NULL;
-	
 	initTexture();
 	refreshTex();
 	
@@ -150,7 +148,7 @@ void Galaxy::buildHierarchy()
 void Galaxy::adjustSectorWidths()
 // Dynamically resize the sectors' widths, in case some are too small.
 {
-	cout << endl;
+//	cout << endl;
 	
 	list<GSector*> *temp = new list<GSector*>();
 	list<GSector*>::iterator i = sectors->begin();
@@ -170,7 +168,7 @@ void Galaxy::adjustSectorWidths()
 	// Done sorting the sectors.
 	
 	for (list<GSector*>::iterator j = temp->begin(); j != temp->end(); j++)
-		cout << (*j)->getArcWidth() << endl;
+//		cout << (*j)->getArcWidth() << endl;
 	
 	// If the current sector is too small, grow it and shrink all larger ones.
 	for (i = temp->begin(); i != temp->end() && (*i)->getArcWidth() < ((*i)->calcMinArcWidth()+5); i++)
@@ -184,13 +182,13 @@ void Galaxy::adjustSectorWidths()
 		remain--;
 		
 		float distr = diff/(float)remain;
-		cout << "diff = " << diff << "; remain = " << remain << "; distr = " << distr << endl; 
+//		cout << "diff = " << diff << "; remain = " << remain << "; distr = " << distr << endl; 
 		
 		list<GSector*>::iterator j = i;
 		j++;
 		while (j != temp->end())
 		{
-			cout << "shrinking sector " << (*j)->getName() << endl;
+//			cout << "shrinking sector " << (*j)->getName() << endl;
 			(*j)->setArcWidth((*j)->getArcWidth()-distr);
 			j++;
 		}
@@ -209,12 +207,12 @@ void Galaxy::adjustSectorWidths()
 	}
 	// Done shifting sectors.
 	
-	cout << "new sector sizes\n";
-	
-	for (list<GSector*>::iterator j = temp->begin(); j != temp->end(); j++)
-		cout << (*j)->getArcBegin() << "  " << (*j)->getArcEnd() << "  " << (*j)->getArcWidth() << endl;
-	
-	cout << "done resizing." << endl << endl;
+//	cout << "new sector sizes\n";
+//	
+//	for (list<GSector*>::iterator j = temp->begin(); j != temp->end(); j++)
+//		cout << (*j)->getArcBegin() << "  " << (*j)->getArcEnd() << "  " << (*j)->getArcWidth() << endl;
+//	
+//	cout << "done resizing." << endl << endl;
 }
 		
 
@@ -284,7 +282,9 @@ bool Galaxy::isColliding(float x, float y)
 
 	angle_d -= rotZ;	
 	angle_d = (angle_d < 0)?angle_d+360:angle_d;
-	
+
+//	cout << xPos << ", " << yPos << endl;
+//	cout << x << ", " << y << " | " << localX << ", " << localY << endl;
 //	cout << angle_d << ", " << norm_mag << endl;
 	
 	if (norm_mag > 1.0)
@@ -294,7 +294,7 @@ bool Galaxy::isColliding(float x, float y)
 		if ((*i)->isColliding(angle_d, norm_mag))
 			selected = (*i);
 		
-	if (selected != NULL) cout << "collide with sector " << selected->getName() << endl;
+	if (selected != NULL) cout << "colliding with sector " << selected->getName() << endl;
 	return collide_flag = true;
 }
 
@@ -332,7 +332,7 @@ void Galaxy::refreshTex()
 	tex_size = (int)(1024.0 * (diameter/500.0));
 	tex_size = (tex_size < 512)?512:tex_size;
 
-	cout << diameter << "  " << tex_size << endl;
+//	cout << diameter << "  " << tex_size << endl;
 
 	// Create a depth buffer for the framebuffer object.
 	GLuint fbo_depth;
@@ -341,7 +341,7 @@ void Galaxy::refreshTex()
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, tex_size, tex_size);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, fbo_depth);
 
-	printGlError();
+//	printGlError();
 
 	// Prepare the texture for rendering.
 	glBindTexture(GL_TEXTURE_2D, texture);
@@ -350,7 +350,7 @@ void Galaxy::refreshTex()
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex_size, tex_size, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_data);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	
-	printGlError();
+//	printGlError();
 	
 	// Create and bind the frame buffer object.
 	GLuint fbo;
@@ -359,7 +359,7 @@ void Galaxy::refreshTex()
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, fbo_depth);
 	
-	//printFramebufferError();
+//	printFramebufferError();
 
 	// Push the viewport to an attribute stack, and render as usual.
 	glPushAttrib(GL_VIEWPORT_BIT);
@@ -388,12 +388,10 @@ void Galaxy::refreshTex()
 void Galaxy::draw()
 // Draw the galaxy.
 {
-	// Set the size and origin of the galaxy, based on the viewport.
+	// Set the size of the galaxy, based on the viewport.
 	int p[4];
 	glGetIntegerv(GL_VIEWPORT,p);
 	side = (p[2]<p[3])?p[2]:p[3];
-	xPos = ((float)p[2])/2.0;
-	yPos = ((float)p[3])/2.0;
 
 	// Turn on blending.
 	glEnable(GL_BLEND);
@@ -430,20 +428,16 @@ void Galaxy::draw()
 		
 		if (sectors->size() > 1)
 		{
-			glColor3d(1,1,1);
 			glBegin(GL_LINES);
 				for (list<GSector*>::iterator i = sectors->begin(); i != sectors->end(); i++)
 				{
 					float arc_begin = (*i)->getArcBegin();
 					float arc_begin_r = arc_begin * M_PI/180;
-					float arc_end = (*i)->getArcEnd();
-					float arc_end_r = arc_end * M_PI/180;
 
+					glColor4d(1,1,1,1);
 					glVertex2d(0.0,0.0);
+					glColor4d(0,0,0,0);
 					glVertex2d(cos(arc_begin_r),sin(arc_begin_r));
-
-					glVertex2d(0.0,0.0);
-					glVertex2d(cos(arc_end_r),sin(arc_end_r));
 				}
 			glEnd();		
 		}

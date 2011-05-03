@@ -98,11 +98,8 @@ bool Button::isColliding(float x, float y)
 	collide_flag = (x >= xPos-w) && (x <= xPos+w) && (y >= yPos-h) && (y <= yPos+h);
 
 	if (collide_flag)
-	{
 		cout << "colliding with button " << label << endl;
-		activate();
-	}
-	
+		
 	return collide_flag;
 }	
 
@@ -113,35 +110,35 @@ void Button::draw()
 {
 	glPushMatrix();
 		glTranslatef(xPos,yPos,-1);
-		glScalef(width,height,1);
+		glScalef(width/2,height/2,1);
 		
 		glBegin(GL_QUADS);
 			glColor4f(.1,.1,.1,1);
-			glVertex2d(-1,1);
-			glVertex2d(-1,-1);
-			glVertex2d(1,-1);
-			glVertex2d(1,1);
+			glVertex3d(-1,1,-1);
+			glVertex3d(-1,-1,-1);
+			glVertex3d(1,-1,-1);
+			glVertex3d(1,1,-1);
 		glEnd();
 	glPopMatrix();
 	
 	glPushMatrix();
 		glTranslatef(xPos,yPos,0);
-		glScalef(width-2,height-2,1);
+		glScalef(width/2-2,height/2-2,1);
 
 		glBegin(GL_QUADS);
 			glColor4f(.15,.15,.15,0);
-			glVertex2d(-1,1);
-			glVertex2d(-1,-1);
+			glVertex3d(-1,1,0);
+			glVertex3d(-1,-1,0);
 			glColor4f(.25,.25,.25,1);
-			glVertex2d(0,-1);
-			glVertex2d(0,1);
+			glVertex3d(0,-1,0);
+			glVertex3d(0,1,0);
 
 			glColor4f(.25,.25,.25,1);
-			glVertex2d(0,1);
-			glVertex2d(0,-1);
+			glVertex3d(0,1,0);
+			glVertex3d(0,-1,0);
 			glColor4f(.15,.15,.15,0);
-			glVertex2d(1,-1);
-			glVertex2d(1,1);
+			glVertex3d(1,-1,0);
+			glVertex3d(1,1,0);
 		glEnd();
 	glPopMatrix();
 
@@ -149,19 +146,19 @@ void Button::draw()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	
 	glEnable(GL_TEXTURE_2D);	
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	
 	glPushMatrix();
 		glTranslatef(xPos,yPos,1);
-		glScalef(text_w, text_h,1);
+		glScalef(text_w/2, text_h/2,1);
 		
 		glBindTexture(GL_TEXTURE_2D, rendered_text);
 		glBegin(GL_QUADS);
 			glColor4f(0,0,0,0);
-			glTexCoord2f(0,1);	glVertex2d(-1,1);
-			glTexCoord2f(0,0);	glVertex2d(-1,-1);
-			glTexCoord2f(1,0);	glVertex2d(1,-1);
-			glTexCoord2f(1,1);	glVertex2d(1,1);
+			glTexCoord2f(0,1);	glVertex3d(-1,1,1);
+			glTexCoord2f(0,0);	glVertex3d(-1,-1,1);
+			glTexCoord2f(1,0);	glVertex3d(1,-1,1);
+			glTexCoord2f(1,1);	glVertex3d(1,1,1);
 		glEnd();
 		glBindTexture(GL_TEXTURE_2D, 0);
 	glPopMatrix();

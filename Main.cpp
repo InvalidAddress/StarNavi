@@ -14,7 +14,7 @@
 #include <SDL/SDL_ttf.h>
 #include "Container.h"
 #include "StateManager.h"
-#include "Button.h"
+#include "ButtonList.h"
 
 #define START_W 800
 #define START_H 600
@@ -99,6 +99,7 @@ void mouseClick(int button, int state, int x, int y)
 	
 	delay = 0;
 	
+	// Invert the y coord.
 	int newY = oldH-y;
 	
 	for (list<Container*>::iterator i = containers.begin(); i != containers.end(); i++)
@@ -108,6 +109,7 @@ void mouseClick(int button, int state, int x, int y)
 
 void mouseHover(int x, int y)
 {
+	// Invert the y coord.
 	int newY = oldH-y;
 	
 	for (list<Container*>::iterator i = containers.begin(); i != containers.end(); i++)
@@ -136,17 +138,34 @@ int main(int argc, char *argv[])
 	else
 		path = (string)argv[1];
 	
+	// Create the galaxy state manager and bind it to a container
 	StateManager *sm = new StateManager(path);
-	Functor<StateManager> *f1 = new Functor<StateManager>(sm, &StateManager::navigate);
-	Container *c1 = new Container(sm,f1,200,0,600,525);
+	Functor<StateManager> *f_sm = new Functor<StateManager>(sm, &StateManager::navigate);
+
+	// Create new container to hold state manager.
+	Container *c1 = new Container(sm,f_sm,200,0,600,525);
 	
+	// Add state manager to list of containers.
 	containers.push_back(c1);
 
-	Functor<StateManager> *f2 = new Functor<StateManager>(sm, &StateManager::backward);
-	Button *back = new Button("<--",f2,0,0,100,15);
-	Functor<Button> *f3 = new Functor<Button>(back, &Button::activate);
-	Container *c2 = new Container(back,f3,0,0,190,600);
+	// Create the button list, and associated functor.
+	ButtonList *bl = new ButtonList(0,0,190,0);
+	Functor<ButtonList> *f_bl = new Functor<ButtonList>(bl, &ButtonList::activate);
+	
+	// Create the back button, and add to button list.
+	Functor<StateManager> *f_back = new Functor<StateManager>(sm, &StateManager::backward);
+	Button *back = new Button("<--",f_back,0,0,190,30);
+	bl->addButton(back);
 
+	// Create the forward button, and add to button list.
+	Functor<StateManager> *f_forward = new Functor<StateManager>(sm, &StateManager::forward);
+	Button *forward = new Button("-->",f_forward,0,0,190,30);
+	bl->addButton(forward);
+
+	// Create new container to hold button list.
+	Container *c2 = new Container(bl,f_bl,0,0,190,600,LEFT_UPPER);
+
+	// Add button list to list of containers.
 	containers.push_back(c2);
 
 	// register display methods

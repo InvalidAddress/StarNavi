@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		15 February 2011
-// Last Updated:		28 April 2011
+// Last Updated:		3 May 2011
 //
 // File name:			Star.cpp
 // Programmer:			Matthew Hydock
@@ -169,18 +169,13 @@ void Star::activate()
 		args[1] = const_cast<char*>(f.c_str());
 		args[2] = (char*)0;
 		
-		cout << f << endl;
+		cout << args[0] << " " << args[1] << endl;
 		cout << "Launching child process" << endl;
 		execvp(const_cast<char*>(args[0]),args);
 		cout << "Child process complete" << endl;
 	}
 	else
 		cout << "parent process\n";
-}
-
-bool Star::getCollideFlag()
-{
-	return collide_flag;
 }
 
 bool Star::isColliding(float x, float y)

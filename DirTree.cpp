@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		5 March 2011
-// Last Updated:		23 March 2011
+// Last Updated:		30 April 2011
 //
 // File name:			DirTree.cpp
 // Programmer:			Matthew Hydock
@@ -17,13 +17,13 @@
 DirTree::DirTree(string dir = "./")
 // Creates a directory tree with the root node at dir.
 {
-	cout << "making a dirtree\n";
+//	cout << "making a dirtree\n";
 	
 	root = new dirnode;
 	mrmime = new MimeIdentifier();
 	numfiles = 0;
 	
-	cout << "made the mime identifier\n";
+//	cout << "made the mime identifier\n";
 	
 	if (dir.compare("./") != 0)	
 		root->name = dir;
@@ -45,7 +45,7 @@ DirTree::DirTree(string dir = "./")
 		root->name.push_back('/');
 	
 	cout << "starting in: " << root->name << endl;	
-	cout << "dirtree made\n";
+//	cout << "dirtree made\n";
 }
 
 
@@ -74,7 +74,7 @@ void DirTree::add(string p, string n)
 	stat(temp_string.c_str(), &(tempf->attr));
 	mrmime->obtainType(tempf);
 	
-	cout << tempf->path << tempf->name << endl;
+//	cout << tempf->path << tempf->name << endl;
 	
 	// Tokenize the given path, and store in an array.
 	vector<string> path_toks = tokenize(p.substr((root->name).size()),"/");
@@ -114,7 +114,7 @@ void DirTree::add(string p, string n)
 	currnode->files.push_back(tempf);
 	currnode->all_files.push_back(tempf);
 	
-	cout << "file added to dirtree\n";
+//	cout << "file added to dirtree\n";
 	numfiles++;
 }
 

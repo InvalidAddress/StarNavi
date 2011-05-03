@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		17 April 2011
-// Last Updated:		25 April 2011
+// Last Updated:		3 May 2011
 //
 // File name:			Drawable.cpp
 // Programmer:			Matthew Hydock
@@ -65,6 +65,12 @@ float Drawable::getHeight()
 // Return the object's height.
 {
 	return height;
+}
+
+bool Drawable::getCollideFlag()
+// Return the flag that knows if the object is colliding or not.
+{
+	return collide_flag;
 }
 
 void Drawable::printGlError()

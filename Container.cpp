@@ -87,8 +87,30 @@ bool Container::isColliding(float x, float y)
 {
 	collide_flag = (x >= xPos) && (x <= xPos+width) && (y >= yPos) && (y <= yPos+height);
 	
+	float localX = x-xPos;
+	float localY = y-yPos;
+	
+	switch(anchor)
+	{
+		case CENTER			: localX -= width/2;
+							  localY -= height/2;
+							  break;
+		case LEFT_UPPER		: localX -= 0;
+							  localY -= height;
+							  break;
+		case RIGHT_UPPER	: localX -= width;
+							  localY -= height;
+							  break;
+		case RIGHT_LOWER	: localX -= width;
+							  localY -= 0;
+							  break;
+		case LEFT_LOWER		: localX -= 0;
+							  localY -= 0;
+							  break;
+	}
+	
 	if (collide_flag)
-		content->isColliding(x-xPos,y-yPos);
+		content->isColliding(localX,localY);
 		
 	return collide_flag;
 }
@@ -118,33 +140,34 @@ void Container::draw()
 	glViewport(xPos,yPos,width,height);
 	
 	glPushMatrix();
-		glBegin(GL_LINES);
-			switch(anchor)
-			{
-				case CENTER			: break;
-				case LEFT_UPPER		: glTranslatef(width/2,-height/2,0);
-									  break;
-				case RIGHT_UPPER	: glTranslatef(-width/2,-height/2,0);
-									  break;
-				case RIGHT_LOWER	: glTranslatef(-width/2,height/2,0);
-									  break;
-				case LEFT_LOWER		: glTranslatef(width/2,height/2,0);
-									  break;
-			}	
+		switch(anchor)
+		{
+			case CENTER			: break;
+			case LEFT_UPPER		: glTranslatef(width/2,-height/2,0);
+								  break;
+			case RIGHT_UPPER	: glTranslatef(-width/2,-height/2,0);
+								  break;
+			case RIGHT_LOWER	: glTranslatef(-width/2,height/2,0);
+								  break;
+			case LEFT_LOWER		: glTranslatef(width/2,height/2,0);
+								  break;
+		}
+		glScalef(width,height,1);
 		
+		glBegin(GL_LINES);		
 			glColor3d(1,1,1);
 			
-			glVertex3d(-(float)width/2.0,(float)height/2.0,100);
-			glVertex3d((float)width/2.0,(float)height/2.0,100);
+			glVertex3d(-.5,.5,100);
+			glVertex3d(.5,.5,100);
 			
-			glVertex3d((float)width/2.0,(float)height/2.0,100);
-			glVertex3d((float)width/2.0,-(float)height/2.0,100);
+			glVertex3d(.5,.5,100);
+			glVertex3d(.5,-.5,100);
 			
-			glVertex3d((float)width/2.0,-(float)height/2.0,100);
-			glVertex3d(-(float)width/2.0,-(float)height/2.0,100);
+			glVertex3d(.5,-.5,100);
+			glVertex3d(-.5,-.5,100);
 			
-			glVertex3d(-(float)width/2.0,-(float)height/2.0,100);
-			glVertex3d(-(float)width/2.0,(float)height/2.0,100);
+			glVertex3d(-.5,-.5,100);
+			glVertex3d(-.5,.5,100);
 		glEnd();
 	glPopMatrix();
 	

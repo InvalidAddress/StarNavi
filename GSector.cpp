@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		18 March 2011
-// Last Updated:		27 April 2011
+// Last Updated:		3 May 2011
 //
 // File name:			GSector.h
 // Programmer:			Matthew Hydock
@@ -38,7 +38,7 @@ GSector::GSector(dirnode *r, list<filenode*> *f, float ra, float b, float w, str
 	arc_begin = b;
 	arc_width = w;
 	
-	cout << arc_begin << " , " << arc_width << endl;
+//	cout << arc_begin << " , " << arc_width << endl;
 	
 	thickness = pow(radius*2,.5);
 	
@@ -267,7 +267,7 @@ void GSector::drawMask()
 		float outer = 360-abs(arc_width);
 		float arc_end = getArcEnd();
 		float i = arc_end;
-		for (float j = i+1;j < arc_end+outer; j += 1)
+		for (float j = i+1; j < arc_end+outer; j += 1)
 		{
 			glColor4d(.2,.2,.2,.5);
 			glVertex2d(0,0);
@@ -278,6 +278,13 @@ void GSector::drawMask()
 			
 			i = j;
 		}
+		
+		glColor4d(.2,.2,.2,.5);
+		glVertex2d(0,0);
+		glColor4d(0,0,0,.5);
+
+		glVertex2d(cos(i*M_PI/180.0),sin(i*M_PI/180.0));
+		glVertex2d(cos(arc_begin*M_PI/180.0),sin(arc_begin*M_PI/180.0));
 	glEnd();
 }
 

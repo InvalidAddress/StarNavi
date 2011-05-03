@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		14 February 2011
-// Last Updated:		28 April 2011
+// Last Updated:		3 May 2011
 //
 // File name:			Star.h
 // Programmer:			Matthew Hydock
@@ -14,7 +14,7 @@
 #ifndef STAR
 #define STAR
 
-class Star:Drawable
+class Star:public Drawable
 {
 	private:
 		static GLuint star_texture;
@@ -46,7 +46,6 @@ class Star:Drawable
 		void recalc();
 		
 		void activate();
-		bool getCollideFlag();	
 		bool isColliding(float x, float y);
 		void draw();
 };
