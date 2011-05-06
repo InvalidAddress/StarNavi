@@ -23,6 +23,8 @@ class StateManager:public Drawable
 		Indexer *indexer;
 		list<Galaxy*> galaxies;
 		list<Galaxy*>::iterator curr;
+		
+		list<string> tags;
 	
 	public:
 		StateManager(string dir);

@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		6 April 2011
-// Last Updated:		28 April 2011
+// Last Updated:		3 May 2011
 //
 // File name:			Container.h
 // Programmer:			Matthew Hydock
@@ -44,17 +44,16 @@ Drawable* Container::getContent()
 }
 
 
-void Container::setAnchor(anchor_type a)
-// Set the origin of the container's coordinate world.
+float Container::getOriginalX()
 {
-	anchor = a;
+	return originalX;
 }
 
-anchor_type Container::getAnchor()
-// Return the origin of the container's coordinate world.
+float Container::getOriginalY()
 {
-	return anchor;
+	return originalY;
 }
+
 
 void Container::scale(float x, float y)
 // Scale the container's width from the original width, based on some ratios for
@@ -63,7 +62,6 @@ void Container::scale(float x, float y)
 	width = originalW * x;
 	height = originalH * y;
 }
-
 
 void Container::translate(float x, float y)
 // Shift the container's position by x and y, based on the original position.
@@ -79,8 +77,7 @@ void Container::activate()
 	if (act != NULL)
 		act->Call();
 }
-	
-		
+			
 bool Container::isColliding(float x, float y)
 // Check if mouse is colliding with container. If so, set flag, and see if the
 // mouse is also colliding with the content.
@@ -109,11 +106,12 @@ bool Container::isColliding(float x, float y)
 							  break;
 	}
 	
-	if (collide_flag)
+	if (content != NULL)
 		content->isColliding(localX,localY);
 		
 	return collide_flag;
 }
+
 
 void Container::draw()
 // Create the new viewport, set the world mode, and draw the contained object.
@@ -171,7 +169,8 @@ void Container::draw()
 		glEnd();
 	glPopMatrix();
 	
-	content->draw();
+	if (content != NULL)
+		content->draw();
 	
 	collide_flag = false;
 }

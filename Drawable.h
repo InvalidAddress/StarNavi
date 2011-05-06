@@ -22,6 +22,11 @@
 #ifndef DRAWABLE
 #define DRAWABLE
 
+#ifndef ANCHOR_TYPE
+#define ANCHOR_TYPE
+enum anchor_type {CENTER, LEFT_UPPER, RIGHT_UPPER, RIGHT_LOWER, LEFT_LOWER};
+#endif
+
 class Drawable
 {
 	protected:
@@ -30,6 +35,8 @@ class Drawable
 		float width;
 		float height;
 	
+		anchor_type anchor;
+		
 		bool collide_flag;
 
 	public:
@@ -48,6 +55,9 @@ class Drawable
 		void setHeight(float h);
 		float getWidth();
 		float getHeight();
+		
+		void setAnchor(anchor_type a);
+		anchor_type getAnchor();
 		
 		bool getCollideFlag();	
 		

@@ -45,6 +45,7 @@ Galaxy::Galaxy(dirnode *r, list<filenode*> *f, cluster_type m, string n)
 	setRotationSpeed(0.02);
 	rotZ = 0;
 	
+	tags = NULL;
 	mode = m;
 	
 	sectors = NULL;
@@ -100,25 +101,43 @@ float Galaxy::getRotationSpeed()
 
 
 //==============================================================================
-// Methods related to sector management.
+// Sector building.
 //==============================================================================
 void Galaxy::buildSectors()
+// Build the galaxy's sectors based on the current build mode.
 {
 	cout << "building sectors\n";
 	clearSectors();
 	
 	sectors = new list<GSector*>();
 	
-	if (mode == DIRECTORY)
-		buildHierarchy();
+	switch (mode)
+	{
+		case DIRECTORY:	buildHierarchy();
+						break;
+		case NAME:		buildByName();
+						break;
+		case TIME:		buildByTime();
+						break;
+		case SIZE:		buildBySize();
+						break;
+		case TYPE:		buildByType();
+						break;
+		case TAG:		buildByTags();
+						break;
+		default:		break;
+	}
 		
 	cout << "sectors built\n";
 	
 	if (sectors->size() == 1)
 		(*(sectors->begin()))->setSingleSectorMode(true);
+	else
+		adjustSectorWidths();
 }
 
 void Galaxy::buildHierarchy()
+// Build a galaxy using the file hierarchy for the structure.
 {
 	cout << "hierarchy build mode\n";
 	
@@ -128,12 +147,20 @@ void Galaxy::buildHierarchy()
 		return;
 	}
 	
+	if (root->dirs.size() == 0)
+	{
+		sectors->push_back(new GSector(NULL,&(root->files),radius,0,360,name));
+		return;
+	}
+	
 	float arc_begin = 0;
 	float arc_width = 360.0*((float)root->files.size()/(float)root->all_files.size());
 	
+	// Make the sector that holds the current directories loose files.
 	sectors->push_back(new GSector(NULL,&(root->files),radius,arc_begin,arc_width,"./"));
 	cout << "root sector built\n";
 	
+	// Make sectors for the other subdirectories. 
 	cout << "creating sectors for directories\n";
 	for (list<dirnode*>::iterator i = root->dirs.begin(); i != root->dirs.end(); i++)
 	{
@@ -141,15 +168,90 @@ void Galaxy::buildHierarchy()
 		arc_width = 360.0*((float)(*i)->all_files.size()/(float)root->all_files.size());
 		sectors->push_back(new GSector(*i,NULL,radius,arc_begin,arc_width));
 	}
-	
-	adjustSectorWidths();
 }
 
-void Galaxy::adjustSectorWidths()
-// Dynamically resize the sectors' widths, in case some are too small.
+void Galaxy::buildByName()
 {
-//	cout << endl;
+	list<filenode*> sorted_files;
+	list<list<filenode*>*> file_lists;
+	size_t charindex = 0;
 	
+	// Sort the galaxies file list.
+	list<filenode*>::iterator i = files->begin();
+	list<filenode*>::iterator j;
+	sorted_files.push_back(*i);
+	i++;
+	while (sorted_files.size() < files->size())
+	{
+		j = sorted_files.begin();
+		for(;j != sorted_files.end() && isLessThan((*j)->name,(*i)->name);j++);
+		if (j == sorted_files.end())	sorted_files.push_back(*i);
+		else							sorted_files.insert(j,(*i));
+		i++;
+	}
+	// Done sorting the sectors.
+	
+	// Preliminary test.
+	i = sorted_files.end();
+	filenode *b = (*(sorted_files.begin()));
+	for (charindex = 0; charindex < 10 && i == sorted_files.end(); charindex++)
+	{
+		for (i = sorted_files.begin(); i != sorted_files.end(); i++)
+			if (charindex < (*i)->name.size() && charindex < b->name.size())
+				if ((*i)->name[charindex] != b->name[charindex])
+					break;
+	}
+	// End preliminary test.
+	
+	// Begin splitting sorted list.
+	i = sorted_files.begin();
+	list<filenode*> *temp = new list<filenode*>;
+	temp->push_back(*i);
+	
+	j = i;
+	j++;
+	while (j != sorted_files.end())
+	{
+		if (charindex >= (*j)->name.size() || charindex >= (*i)->name.size() || (*j)->name[charindex] != (*i)->name[charindex])
+		{
+			file_lists.push_back(temp);
+			temp = new list<filenode*>;
+		}
+		
+		temp->push_back(*j);
+		i = j;
+		j++;
+	}
+	
+	file_lists.push_back(temp);
+	// End splitting sorted list.
+	
+	
+}
+
+void Galaxy::buildByTime()
+{}
+
+void Galaxy::buildBySize()
+{}
+
+void Galaxy::buildByType()
+{}
+
+void Galaxy::buildByTags()
+{}
+//==============================================================================
+
+
+//==============================================================================
+// Sector management.
+//==============================================================================
+void Galaxy::adjustSectorWidths()
+// Dynamically resize the sectors' widths, in case some are too small. This
+// method will probably derp hard if there are a ton of sectors that are too
+// small. Until I fix that, just try not to have ~70 directories with only 1
+// file in each of them.
+{	
 	list<GSector*> *temp = new list<GSector*>();
 	list<GSector*>::iterator i = sectors->begin();
 	
@@ -166,10 +268,7 @@ void Galaxy::adjustSectorWidths()
 		i++;
 	}
 	// Done sorting the sectors.
-	
-	for (list<GSector*>::iterator j = temp->begin(); j != temp->end(); j++)
-//		cout << (*j)->getArcWidth() << endl;
-	
+		
 	// If the current sector is too small, grow it and shrink all larger ones.
 	for (i = temp->begin(); i != temp->end() && (*i)->getArcWidth() < ((*i)->calcMinArcWidth()+5); i++)
 	{
@@ -182,13 +281,11 @@ void Galaxy::adjustSectorWidths()
 		remain--;
 		
 		float distr = diff/(float)remain;
-//		cout << "diff = " << diff << "; remain = " << remain << "; distr = " << distr << endl; 
 		
 		list<GSector*>::iterator j = i;
 		j++;
 		while (j != temp->end())
 		{
-//			cout << "shrinking sector " << (*j)->getName() << endl;
 			(*j)->setArcWidth((*j)->getArcWidth()-distr);
 			j++;
 		}
@@ -206,13 +303,6 @@ void Galaxy::adjustSectorWidths()
 		j = k;
 	}
 	// Done shifting sectors.
-	
-//	cout << "new sector sizes\n";
-//	
-//	for (list<GSector*>::iterator j = temp->begin(); j != temp->end(); j++)
-//		cout << (*j)->getArcBegin() << "  " << (*j)->getArcEnd() << "  " << (*j)->getArcWidth() << endl;
-//	
-//	cout << "done resizing." << endl << endl;
 }
 		
 
@@ -221,7 +311,7 @@ void Galaxy::clearSectors()
 	if (sectors != NULL)
 	{
 		for (list<GSector*>::iterator i = sectors->begin(); i != sectors->end(); i++)
-			delete (*i);
+			sectors->erase(i);
 		delete (sectors);
 	}
 }
@@ -238,6 +328,18 @@ list<GSector*>* Galaxy::getSectors()
 //==============================================================================
 // Miscellanious getters and setters.
 //==============================================================================
+void Galaxy::setTags(list<string> *t)
+// Set the galaxy's tag list.
+{
+	tags = t;
+}
+
+list<string>* Galaxy::getTags()
+// Return the galaxy's list of tags.
+{
+	return tags;
+}
+
 void Galaxy::setMode(cluster_type m)
 // Set the galaxy's clustering mode.
 {
@@ -345,8 +447,8 @@ void Galaxy::refreshTex()
 
 	// Prepare the texture for rendering.
 	glBindTexture(GL_TEXTURE_2D, texture);
-	if (tex_data == NULL) delete(tex_data);
-	tex_data = new GLbyte[tex_size*tex_size*4];
+	if (tex_data != NULL) delete(tex_data);
+	tex_data = new GLubyte[tex_size*tex_size*4];
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex_size, tex_size, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_data);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	
@@ -444,12 +546,15 @@ void Galaxy::draw()
 	glPopMatrix();
 	
 	// Draw the selection mask.
-	glPushMatrix();
-		glTranslatef(0,0,1);
-		glRotatef(rotZ,0,0,1);
-		glScalef((side)/2,(side)/2,1);
-		if (selected != NULL) selected->drawMask();
-	glPopMatrix();
+	if (collide_flag)
+	{
+		glPushMatrix();
+			glTranslatef(0,0,1);
+			glRotatef(rotZ,0,0,1);
+			glScalef((side)/2,(side)/2,1);
+			if (selected != NULL) selected->drawMask();
+		glPopMatrix();
+	}
 	
 	// Turn off blending.
 	glDisable(GL_BLEND);

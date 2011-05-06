@@ -67,6 +67,18 @@ float Drawable::getHeight()
 	return height;
 }
 
+void Drawable::setAnchor(anchor_type a)
+// Set the origin of the container's coordinate world.
+{
+	anchor = a;
+}
+
+anchor_type Drawable::getAnchor()
+// Return the origin of the container's coordinate world.
+{
+	return anchor;
+}
+
 bool Drawable::getCollideFlag()
 // Return the flag that knows if the object is colliding or not.
 {

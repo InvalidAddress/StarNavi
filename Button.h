@@ -11,6 +11,7 @@
 //==============================================================================
 
 #include "Drawable.h"
+#include "DrawText.h"
 #include <SDL/SDL_ttf.h>
 
 #ifndef BUTTON
@@ -25,10 +26,7 @@ class Button:public Drawable
 
 		AbstractFunctor *act;
 		
-		SDL_Surface *buffer;
-		GLuint rendered_text;
-		GLbyte *tex_data;
-		int text_w, text_h;
+		DrawText *text;
 		
 		void buildText();
 		
@@ -36,14 +34,13 @@ class Button:public Drawable
 		Button(string l, AbstractFunctor *f, float x, float y, float w, float h, bool active = true);
 		~Button();
 		
-		bool isColliding(float x, float y);
 		bool isInteractive();
 		void setInteract(bool c);
 		
 		void setAction(AbstractFunctor *f);
 		void activate();
 		
-		void drawText(char *input, int x, int y, void *font);
+		bool isColliding(float x, float y);
 		void draw();
 };
 #endif

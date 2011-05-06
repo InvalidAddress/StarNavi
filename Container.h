@@ -17,11 +17,6 @@
 #ifndef CONTAINER
 #define CONTAINER
 
-#ifndef ANCHOR_TYPE
-#define ANCHOR_TYPE
-enum anchor_type {CENTER, LEFT_UPPER, RIGHT_UPPER, RIGHT_LOWER, LEFT_LOWER};
-#endif
-
 class Container:public Drawable
 {
 	private:
@@ -29,8 +24,6 @@ class Container:public Drawable
 		float originalY;
 		float originalW;
 		float originalH;
-		
-		anchor_type anchor;
 		
 		Drawable *content;
 		AbstractFunctor *act;
@@ -41,11 +34,12 @@ class Container:public Drawable
 		
 		Drawable* getContent();
 		
+		float getOriginalX();
+		float getOriginalY();
+		
+		
 		void scale(float x, float y);
 		void translate(float x, float y);
-		
-		void setAnchor(anchor_type a);
-		anchor_type getAnchor();
 		
 		void activate();
 		bool isColliding(float x, float y);

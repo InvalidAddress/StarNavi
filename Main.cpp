@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		14 February 2011
-// Last Updated:		28 April 2011
+// Last Updated:		3 May 2011
 //
 // File name:			MainClass.cpp
 // Programmer:			Matthew Hydock
@@ -11,6 +11,7 @@
 //==============================================================================
 
 #include <GL/glut.h>
+#include <SDL/SDL.h>
 #include <SDL/SDL_ttf.h>
 #include "Container.h"
 #include "StateManager.h"
@@ -19,13 +20,38 @@
 #define START_W 800
 #define START_H 600
 
+//==============================================================================
+// Method definitions.
+//==============================================================================
+void init();
+void buildGUI();
+
+void display();
+void idleFunc();
+void reshape(int w, int h);
+
+void mouseClick(int button, int state, int x, int y);
+void mouseHover(int x, int y);
+//==============================================================================
+
+
+//==============================================================================
+// Global variables.
+//==============================================================================
 GLuint Star::star_texture = 0;
 list<Container*> containers;
 int oldW = START_W, oldH = START_H;
+int oldX = 0, oldY = 0;
 int delay = 0;
+string path;
+//==============================================================================
 
+
+//==============================================================================
+// Initializers.
+//==============================================================================
 void init()
-// Set clear color and shading model, initialize variables, and make menu.
+// Set clear color and shading model and initialize systems.
 {
 	glClearColor(0.0,0.0,0.0,0.0);
 	glShadeModel(GL_SMOOTH);
@@ -48,7 +74,83 @@ void init()
 		exit(1);
 }
 
+void buildGUI()
+{
+	// Create the galaxy state manager and bind it to a container
+	StateManager *sm = new StateManager(path);
+	Functor<StateManager> *f_sm = new Functor<StateManager>(sm, &StateManager::navigate);
+
+	// Create new container to hold state manager.
+	Container *c1 = new Container(sm,f_sm,150,25,500,500);
+	
+	// Add state manager to list of containers.
+	containers.push_back(c1);
+
+//==============================================================================
+// Buttons.
+//==============================================================================
+	// Create the button list, and associated functor.
+	ButtonList *bl = new ButtonList(0,0,140,0);
+	Functor<ButtonList> *f_bl = new Functor<ButtonList>(bl, &ButtonList::activate);
+	
+	// Create the back button, and add to button list.
+	AbstractFunctor *f_back = new Functor<StateManager>(sm, &StateManager::backward);
+	Button *back = new Button("<--",f_back,0,0,140,30);
+	bl->addButton(back);
+
+	// Create the forward button, and add to button list.
+	AbstractFunctor *f_forward = new Functor<StateManager>(sm, &StateManager::forward);
+	Button *forward = new Button("-->",f_forward,0,0,140,30);
+	bl->addButton(forward);
+
+	// Create the 'by name' button, and add to button list.
+	AbstractFunctor *f_name = new NullFunctor();
+	Button *name = new Button("By Name",f_name,0,0,140,30);
+	bl->addButton(name);
+
+	// Create the 'by date' button, and add to button list.
+	AbstractFunctor *f_date = new NullFunctor();
+	Button *date = new Button("By Date",f_date,0,0,140,30);
+	bl->addButton(date);
+
+	// Create the 'by size' button, and add to button list.
+	AbstractFunctor *f_size = new NullFunctor();
+	Button *size = new Button("By Size",f_size,0,0,140,30);
+	bl->addButton(size);
+
+	// Create new container to hold button list.
+	Container *c2 = new Container(bl,f_bl,1,0,140,525,LEFT_UPPER);
+
+	// Add button list to list of containers.
+	containers.push_back(c2);
+//==============================================================================
+	
+	// Create new container to hold file/sector info.
+	Container *c3 = new Container(NULL,new NullFunctor(),660,0,140,525,LEFT_UPPER);
+
+	// Add file/sector info to container list.
+	containers.push_back(c3);	
+	
+	// Create new container to hold path buttons and location bar.
+	Container *c4 = new Container(NULL,new NullFunctor(),1,535,799,64);
+	
+	// Add location bar and path buttons to container list.
+	containers.push_back(c4);
+	
+	// Create new container to hold current galaxy's name
+	Container *c5 = new Container(NULL,new NullFunctor(),150,0,500,15);
+	
+	// Add galaxy name to container list.
+	containers.push_back(c5);
+}
+//==============================================================================
+
+
+//==============================================================================
+// Display methods.
+//==============================================================================
 void display()
+// Draw all of the containers' contents.
 {	
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -73,15 +175,17 @@ void reshape(int w, int h)
 	
 	for (list<Container*>::iterator i = containers.begin(); i != containers.end(); i++)
 	{
+		// Scale the containers to their new sizes.
 		(*i)->scale(wRatio, hRatio);
 		
-		float oldX = (*i)->getPosX();
-		float oldY = (*i)->getPosY();
+		float oldX = (*i)->getOriginalX();
+		float oldY = (*i)->getOriginalY();
 		
-		float xOffset = (oldX * wRatio)-oldX;
-		float yOffset = (oldY * hRatio)-oldY;
+		float newX = oldX * wRatio;
+		float newY = oldY * hRatio;
 		
-		(*i)->translate(xOffset,yOffset);
+		// Reposition the containers.
+		(*i)->setPosition(newX,newY);
 	}
 	
 	oldW = w;
@@ -91,7 +195,12 @@ void reshape(int w, int h)
 	
 	glutPostRedisplay();
 }
+//==============================================================================
 
+
+//==============================================================================
+// Mouse input
+//==============================================================================
 void mouseClick(int button, int state, int x, int y)
 {
 	if (delay < 50)
@@ -108,28 +217,35 @@ void mouseClick(int button, int state, int x, int y)
 }	
 
 void mouseHover(int x, int y)
-{
+{	
 	// Invert the y coord.
 	int newY = oldH-y;
 	
 	for (list<Container*>::iterator i = containers.begin(); i != containers.end(); i++)
 		(*i)->isColliding(x,newY);
 }
+//==============================================================================
 
+
+//==============================================================================
+// Main method
+//==============================================================================
 int main(int argc, char *argv[])
 {	
-	// set up main window
+	// Initialize SDL.
+	SDL_Init(SDL_INIT_EVERYTHING);
+	
+	// Set up the GLUT main window
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DEPTH|GLUT_DOUBLE|GLUT_RGBA);
 	glutInitWindowSize(oldW, oldH);
 	glutInitWindowPosition(200, 200);
 	glutCreateWindow("StarNavi");
 	
+	// Initialize the environment.
 	init();
 
-	// Set up the galaxy.
-	string path;
-	
+	// Set the path
 	if (argc > 2)
 		return 1;
 		
@@ -138,46 +254,24 @@ int main(int argc, char *argv[])
 	else
 		path = (string)argv[1];
 	
-	// Create the galaxy state manager and bind it to a container
-	StateManager *sm = new StateManager(path);
-	Functor<StateManager> *f_sm = new Functor<StateManager>(sm, &StateManager::navigate);
+	// Build the GUI components.
+	buildGUI();
 
-	// Create new container to hold state manager.
-	Container *c1 = new Container(sm,f_sm,200,0,600,525);
-	
-	// Add state manager to list of containers.
-	containers.push_back(c1);
-
-	// Create the button list, and associated functor.
-	ButtonList *bl = new ButtonList(0,0,190,0);
-	Functor<ButtonList> *f_bl = new Functor<ButtonList>(bl, &ButtonList::activate);
-	
-	// Create the back button, and add to button list.
-	Functor<StateManager> *f_back = new Functor<StateManager>(sm, &StateManager::backward);
-	Button *back = new Button("<--",f_back,0,0,190,30);
-	bl->addButton(back);
-
-	// Create the forward button, and add to button list.
-	Functor<StateManager> *f_forward = new Functor<StateManager>(sm, &StateManager::forward);
-	Button *forward = new Button("-->",f_forward,0,0,190,30);
-	bl->addButton(forward);
-
-	// Create new container to hold button list.
-	Container *c2 = new Container(bl,f_bl,0,0,190,600,LEFT_UPPER);
-
-	// Add button list to list of containers.
-	containers.push_back(c2);
-
-	// register display methods
+	// Register display methods
 	glutDisplayFunc(display);
 	glutIdleFunc(idleFunc);
 	glutReshapeFunc(reshape);
 	
-	// register input methods.
+	// Register input methods.
 	glutMouseFunc(mouseClick);
 	glutPassiveMotionFunc(mouseHover);
 	
+	// Start the GLUT main loop.
 	glutMainLoop();
+	
+	// Stop SDL.
+	SDL_Quit();
 	
 	return 0;
 }
+//==============================================================================

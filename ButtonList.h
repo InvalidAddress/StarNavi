@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		25 April 2011
-// Last Updated:		25 April 2011
+// Last Updated:		3 May 2011
 //
 // File name:			ButtonList.h
 // Programmer:			Matthew Hydock
@@ -37,6 +37,9 @@ class ButtonList:public Drawable
 		void addButton(Button *b);
 		list<Button*>* getButtonsList();
 		Button* getButton(size_t i);
+		
+		void setWidth(float w);
+		void setHeight(float h);
 		
 		void setOrientation(int o);
 		int getOrientation();

@@ -75,6 +75,26 @@ Button* ButtonList::getButton(size_t i)
 //==============================================================================
 // Setters and getters.
 //==============================================================================
+void ButtonList::setWidth(float w)
+// Sets the width of the list, and all of its buttons.
+{
+	width = w;
+
+	if (orientation == VERTICAL)
+		for (list<Button*>::iterator i = buttons->begin(); i != buttons->end(); i++)
+			(*i)->setWidth(w);
+}
+
+void ButtonList::setHeight(float h)
+// Sets the height of the list, and all of its buttons.
+{
+	width = h;
+	
+	if (orientation == HORIZONTAL)
+		for (list<Button*>::iterator i = buttons->begin(); i != buttons->end(); i++)
+			(*i)->setHeight(h);
+}
+
 void ButtonList::setOrientation(int o)
 {
 	orientation = o;
@@ -127,7 +147,7 @@ bool ButtonList::isColliding(float x, float y)
 	float localX = x-(xPos + ((*i)->getWidth()/2));
 	float localY = y-(yPos - ((*i)->getHeight()/2));
 	
-	cout << x << ", " << y << " | " << localX << ", " << localY << endl;
+//	cout << x << ", " << y << " | " << localX << ", " << localY << endl;
 	
 	collide_flag = false;
 	
@@ -147,6 +167,13 @@ bool ButtonList::isColliding(float x, float y)
 
 void ButtonList::draw()
 {
+	// Set the size of the buttonlist, based on the viewport.
+	int p[4];
+	glGetIntegerv(GL_VIEWPORT,p);
+	
+	if (orientation == VERTICAL) setWidth(p[2]);
+	if (orientation == HORIZONTAL) setHeight(p[3]);
+
 	glPushMatrix();
 		list<Button*>::iterator i = buttons->begin();
 		float x = xPos + ((*i)->getWidth()/2);
