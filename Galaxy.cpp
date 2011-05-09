@@ -42,11 +42,11 @@ Galaxy::Galaxy(dirnode *r, list<filenode*> *f, cluster_type m, string n)
 	thickness = pow(radius*2.0,.5);
 	
 	setRotation(0,0);
-	setRotationSpeed(0.02);
+	setRotationSpeed(0.0);
 	rotZ = 0;
 	
 	tags = NULL;
-	mode = m;
+	cluster_mode = m;
 	
 	sectors = NULL;
 	selected = NULL;
@@ -101,6 +101,72 @@ float Galaxy::getRotationSpeed()
 
 
 //==============================================================================
+// Miscellanious getters and setters.
+//==============================================================================
+void Galaxy::setName(string n)
+// Set the galaxy's name (to be used if root == NULL)
+{
+	name = n;
+}
+
+string Galaxy::getName()
+// Obtain the galaxy's name.
+{
+	return name;
+}
+
+void Galaxy::setTags(list<string> *t)
+// Set the galaxy's tag list.
+{
+	tags = t;
+}
+
+list<string>* Galaxy::getTags()
+// Return the galaxy's list of tags.
+{
+	return tags;
+}
+
+void Galaxy::setClusterMode(cluster_type m)
+// Set the galaxy's clustering mode.
+{
+	cluster_mode = m;
+}
+
+cluster_type Galaxy::getClusterMode()
+// Return the galaxy's clustering mode.
+{
+	return cluster_mode;
+}
+
+void Galaxy::setDirectory(dirnode *r)
+// Set the galaxy's file indexer.
+{
+	root = r;
+	files = &(r->all_files);
+}
+
+dirnode* Galaxy::getDirectory()
+// Obtain a pointer to the root of the indexer used by the galaxy.
+{
+	return root;
+}
+
+void Galaxy::setFileList(list<filenode*> *f)
+// Set the galaxy's file list (to be used if root == NULL)
+{
+	files = f;
+}
+
+list<filenode*>* Galaxy::getFileList()
+// Obtain the galaxy's file list (to be used if root == NULL)
+{
+	return files;
+}
+//==============================================================================
+
+
+//==============================================================================
 // Sector building.
 //==============================================================================
 void Galaxy::buildSectors()
@@ -111,7 +177,7 @@ void Galaxy::buildSectors()
 	
 	sectors = new list<GSector*>();
 	
-	switch (mode)
+	switch (cluster_mode)
 	{
 		case DIRECTORY:	buildHierarchy();
 						break;
@@ -143,13 +209,8 @@ void Galaxy::buildHierarchy()
 	
 	if (root == NULL)
 	{
-		sectors->push_back(new GSector(NULL,files,radius,0,360,name));
-		return;
-	}
-	
-	if (root->dirs.size() == 0)
-	{
-		sectors->push_back(new GSector(NULL,&(root->files),radius,0,360,name));
+		string n = name + " files";
+		sectors->push_back(new GSector(NULL,files,radius,0,360,n));
 		return;
 	}
 	
@@ -171,6 +232,7 @@ void Galaxy::buildHierarchy()
 }
 
 void Galaxy::buildByName()
+// Build a galaxy by organizing files by their names.
 {
 	list<filenode*> sorted_files;
 	list<list<filenode*>*> file_lists;
@@ -254,13 +316,14 @@ void Galaxy::adjustSectorWidths()
 {	
 	list<GSector*> *temp = new list<GSector*>();
 	list<GSector*>::iterator i = sectors->begin();
+	list<GSector*>::iterator j;
 	
 	// Sort the sectors into another list.
 	temp->push_back(*i);
 	i++;
 	while (temp->size() < sectors->size())
 	{
-		list<GSector*>::iterator j = temp->begin();
+		j = temp->begin();
 		while(j != temp->end() && (*i)->getArcWidth() > (*j)->getArcWidth())
 			j++;
 		if (j == temp->end())	temp->push_back(*i);
@@ -276,13 +339,13 @@ void Galaxy::adjustSectorWidths()
 		(*i)->setArcWidth((*i)->getArcWidth()+diff);
 		
 		int remain = 0;
-		for (list<GSector*>::iterator j = i; j != temp->end(); j++)
+		for (j = i; j != temp->end(); j++)
 			remain++;
 		remain--;
 		
 		float distr = diff/(float)remain;
 		
-		list<GSector*>::iterator j = i;
+		j = i;
 		j++;
 		while (j != temp->end())
 		{
@@ -293,16 +356,30 @@ void Galaxy::adjustSectorWidths()
 	// Done shrinking the sectors.
 	
 	// Shift all of the sectors into proper positions
-	list<GSector*>::iterator j = sectors->begin();
-	list<GSector*>::iterator k = sectors->begin();
+	i = sectors->begin();
+	j = sectors->begin();
 	
-	k++;
-	for(;k != sectors->end(); k++)
+	j++;
+	for(;j != sectors->end(); j++)
 	{
-		(*k)->setArcBegin((*j)->getArcEnd());
-		j = k;
+		(*j)->setArcBegin((*i)->getArcEnd());
+		i = j;
 	}
 	// Done shifting sectors.
+	
+	// Make sure all the stars are within their sector's bounds.
+	for (i = sectors->begin(); i != sectors->end(); i++)
+	{
+		float beg = (*i)->getArcBegin();
+		float wid = (*i)->getArcWidth();
+		float thk = (*i)->getThickness();
+		float rad = (*i)->getRadius();
+		
+		for (list<Star*>::iterator k = (*i)->getStars()->begin(); k != (*i)->getStars()->end(); k++)
+			if ((*k)->getAngle() > beg+wid || (*k)->getAngle() < beg)
+				(*k)->randomPosition(beg,beg+wid,0,rad,-thk,thk);
+	}
+	// Done repositioning stars.
 }
 		
 
@@ -326,62 +403,23 @@ list<GSector*>* Galaxy::getSectors()
 
 
 //==============================================================================
-// Miscellanious getters and setters.
-//==============================================================================
-void Galaxy::setTags(list<string> *t)
-// Set the galaxy's tag list.
-{
-	tags = t;
-}
-
-list<string>* Galaxy::getTags()
-// Return the galaxy's list of tags.
-{
-	return tags;
-}
-
-void Galaxy::setMode(cluster_type m)
-// Set the galaxy's clustering mode.
-{
-	mode = m;
-}
-
-cluster_type Galaxy::getMode()
-// Return the galaxy's clustering mode.
-{
-	return mode;
-}
-
-void Galaxy::setDirectory(dirnode *r)
-// Set the galaxy's file indexer.
-{
-	root = r;
-	files = &(r->all_files);
-}
-
-dirnode* Galaxy::getDirectory()
-// Obtain a pointer to the indexer used by the galaxy.
-{
-	return root;
-}
-//==============================================================================
-
-
-//==============================================================================
 // Methods for user interaction.
 //==============================================================================
 bool Galaxy::isColliding(float x, float y)
 {
 	selected = NULL;
 	
+	// Turn the given coordinates to local coordinates.
 	float localX = x-xPos;
 	float localY = y-yPos;
 	
+	// Turn the local cartesian coordinates into local polar coordinates.
 	float angle_r = atan2(localY,localX);
 	float angle_d = angle_r*(180.0/M_PI);
 	float magnitude = sqrt(pow(localX,2.0)+pow(localY,2.0));
 	float norm_mag = magnitude/(side/2);
 
+	// Shift the angle to match the galaxy's rotation
 	angle_d -= rotZ;	
 	angle_d = (angle_d < 0)?angle_d+360:angle_d;
 
@@ -392,11 +430,12 @@ bool Galaxy::isColliding(float x, float y)
 	if (norm_mag > 1.0)
 		return collide_flag = false;
 	
-	for (list<GSector*>::iterator i = sectors->begin(); i != sectors->end(); i++)
+	for (list<GSector*>::iterator i = sectors->begin(); i != sectors->end() && selected == NULL; i++)
 		if ((*i)->isColliding(angle_d, norm_mag))
 			selected = (*i);
 		
 	if (selected != NULL) cout << "colliding with sector " << selected->getName() << endl;
+	
 	return collide_flag = true;
 }
 
@@ -523,38 +562,87 @@ void Galaxy::draw()
 	// Turn off texture mode.
 	glDisable(GL_TEXTURE_2D);
 	
-	// Draw the sector division lines.
-	glPushMatrix();
-		glRotatef(rotZ,0,0,1);
-		glScalef((side-5)/2,(side-5)/2,1);
-		
-		if (sectors->size() > 1)
-		{
-			glBegin(GL_LINES);
-				for (list<GSector*>::iterator i = sectors->begin(); i != sectors->end(); i++)
-				{
-					float arc_begin = (*i)->getArcBegin();
-					float arc_begin_r = arc_begin * M_PI/180;
-
-					glColor4d(1,1,1,1);
-					glVertex2d(0.0,0.0);
-					glColor4d(0,0,0,0);
-					glVertex2d(cos(arc_begin_r),sin(arc_begin_r));
-				}
-			glEnd();		
-		}
-	glPopMatrix();
-	
-	// Draw the selection mask.
-	if (collide_flag)
+	// If the user is not in star selection mode, draw the sector lines and the
+	// sector selection mask.
+	if (!Star::starSelectionMode)
 	{
+		// Draw the sector division lines.
 		glPushMatrix();
-			glTranslatef(0,0,1);
 			glRotatef(rotZ,0,0,1);
-			glScalef((side)/2,(side)/2,1);
-			if (selected != NULL) selected->drawMask();
+			glScalef((side-5)/2,(side-5)/2,1);
+		
+			if (sectors->size() > 1)
+			{
+				glBegin(GL_LINES);
+					for (list<GSector*>::iterator i = sectors->begin(); i != sectors->end(); i++)
+					{
+						float arc_begin = (*i)->getArcBegin();
+						float arc_begin_r = arc_begin * M_PI/180;
+
+						glColor4d(1,1,1,1);
+						glVertex2d(0.0,0.0);
+						glColor4d(0,0,0,0);
+						glVertex2d(cos(arc_begin_r),sin(arc_begin_r));
+					}
+				glEnd();		
+			}
 		glPopMatrix();
+	
+		// Draw the selection mask.
+		if (collide_flag)
+		{
+			glPushMatrix();
+				glTranslatef(0,0,1);
+				glRotatef(rotZ,0,0,1);
+				glScalef((side)/2,(side)/2,1);
+				if (selected != NULL) selected->drawMask();
+			glPopMatrix();
+		}
 	}
+	
+	// User is in star selection mode.
+	if (Star::starSelectionMode || sectors->size() == 1)
+		// If the user is mousing over the galaxy...
+		if (collide_flag)
+			// If the user is mousing over a sector...
+			if (selected != NULL)
+			{
+				Star* star = selected->getSelected();
+				
+				// If the user is mousing over a star, draw the star's label.
+				if (star != NULL)
+				{
+					// Try to initialize the text label. If it already exists,
+					// this does nothing.
+					star->initLabel();
+					
+					// Galaxy is being scaled to window. The star's label's
+					// coordinates also need to be scaled, if they are to hover
+					// over their star.
+					float x = star->getPosX();
+					float y = star->getPosY();
+					float w = star->getLabel()->getWidth() + 10;
+					float h = star->getLabel()->getHeight() + 8;
+					
+					x *= ((side-5)/2)/radius;
+					y *= ((side-5)/2)/radius;
+
+					// Get the label away from the edges of the viewport
+					if (x-w/2 < -p[2]/2.0) x = -p[2]/2.0 + w/2;
+					if (x+w/2 > p[2]/2.0) x = p[2]/2.0 - w/2;
+					if (y-h/2 < -p[3]/2.0) y = -p[3]/2.0 + h/2;
+					if (y+h/2 > p[3]/2.0) y = p[3]/2.0 - h/2;					
+					
+					// Set the label's new position.
+					star->getLabel()->setPosition(x,y);
+					
+					// Shift the label up a little, and draw.
+					glPushMatrix();
+						glTranslatef(0,0,2);
+						star->drawLabel();
+					glPopMatrix();
+				}
+			}
 	
 	// Turn off blending.
 	glDisable(GL_BLEND);

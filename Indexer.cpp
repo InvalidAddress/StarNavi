@@ -17,8 +17,8 @@
 void Indexer::build(string dir)
 // Recursive method to build a directory hierarchy.
 {
-	DIR *d = opendir(dir.c_str());
-	dirent *dr = readdir(d);
+	DIR* d = opendir(dir.c_str());
+	dirent* dr = readdir(d);
 	
 	while (dr != NULL)
 	{

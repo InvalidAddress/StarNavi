@@ -24,19 +24,29 @@ class DrawText:public Drawable
 		float aspect_ratio;
 		
 		GLuint rendered_text;
-		GLubyte *tex_data;
+		GLubyte* tex_data;
 
 		
 	public:
-		DrawText(string f, string t, int size = 14, float x = 0, float y = 0, anchor_type a = CENTER);
+		DrawText(string t, string f = "/usr/share/fonts/truetype/freefont/FreeSans.ttf", int size = 14, float x = 0, float y = 0, anchor_type a = CENTER);
 		~DrawText();
 		
 		void setWidth(float w);
 		void setHeight(float h);		
 		
+		void setFontSize(int s);
+		int getFontSize();
+		
+		void setFont(string f);
+		string getFont();
+		
+		void setText(string t);
+		string getText();
+		
 		bool isColliding(float x, float y) {return false;};
 		
-		void buildTexture();
+		void initTexture();
+		void refreshTexture();
 		void draw();
 };
 #endif

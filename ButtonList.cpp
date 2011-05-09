@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		29 April 2011
-// Last Updated:		3 May 2011
+// Last Updated:		6 May 2011
 //
 // File name:			ButtonList.h
 // Programmer:			Matthew Hydock
@@ -40,7 +40,7 @@ ButtonList::~ButtonList()
 //==============================================================================
 // Button management.
 //==============================================================================
-void ButtonList::addButton(Button *b)
+void ButtonList::addButton(Button* b)
 {
 	b->setWidth(width);
 	b->setPosition(0,0);

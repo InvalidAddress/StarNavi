@@ -18,12 +18,14 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include <math.h>
 #include <time.h>
 
 //C++ includes
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <list>
 #include <vector>
@@ -80,8 +82,8 @@ extern inline vector<string> tokenize(string s, string del)
 		return vector<string>();
 		
 	list<string> l;
-	char *cs = (char*)malloc(sizeof(char) * (s.size()+1));
-	char *ptr;
+	char* cs = (char*)malloc(sizeof(char) * (s.size()+1));
+	char* ptr;
 	
 	strcpy(cs,s.c_str());
 	ptr = strtok(cs,del.c_str());

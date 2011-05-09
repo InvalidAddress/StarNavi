@@ -47,7 +47,7 @@ void MimeIdentifier::setDefaultApp(filenode *f)
 	f->default_app = "gedit";
 }
 
-void MimeIdentifier::setFileType(filenode *f)
+void MimeIdentifier::setFileType(filenode* f)
 // Seeks through the mime filetype database on the user's computer, and attempts
 // to determine the requested file's filetype.
 {
@@ -77,7 +77,7 @@ void MimeIdentifier::setFileType(filenode *f)
 	magic_close(magic_cookie);
 }
 
-void MimeIdentifier::enumFileType(filenode *f)
+void MimeIdentifier::enumFileType(filenode* f)
 // Take a string representation of a file type, and turn it into an enumeration.
 {
 	string type = f->mimetype.substr(0,f->mimetype.find_first_of('/'));
@@ -111,7 +111,7 @@ MimeIdentifier::MimeIdentifier()
 	buildDefaultAppsList();
 }
 
-void MimeIdentifier::obtainType(filenode *f)
+void MimeIdentifier::obtainType(filenode* f)
 // Scan through the mime table, and return the type of the requested file.
 {
 	setFileType(f);

@@ -16,6 +16,7 @@
 #include "Container.h"
 #include "StateManager.h"
 #include "ButtonList.h"
+#include "StatusBar.h"
 
 #define START_W 800
 #define START_H 600
@@ -39,6 +40,8 @@ void mouseHover(int x, int y);
 // Global variables.
 //==============================================================================
 GLuint Star::star_texture = 0;
+bool Star::starSelectionMode = false;
+
 list<Container*> containers;
 int oldW = START_W, oldH = START_H;
 int oldX = 0, oldY = 0;
@@ -137,8 +140,11 @@ void buildGUI()
 	// Add location bar and path buttons to container list.
 	containers.push_back(c4);
 	
+	// Make a status bar, to show the current galaxy's name.
+	StatusBar *sb = new StatusBar(sm);
+	
 	// Create new container to hold current galaxy's name
-	Container *c5 = new Container(NULL,new NullFunctor(),150,0,500,15);
+	Container *c5 = new Container(sb,new NullFunctor(),150,0,500,15);
 	
 	// Add galaxy name to container list.
 	containers.push_back(c5);
@@ -208,12 +214,21 @@ void mouseClick(int button, int state, int x, int y)
 	
 	delay = 0;
 	
-	// Invert the y coord.
-	int newY = oldH-y;
+	if (button == GLUT_RIGHT_BUTTON)
+	{
+		Star::starSelectionMode = !Star::starSelectionMode;
+		cout << "star selection mode " << Star::starSelectionMode << endl;
+	}
+		
+	if (button == GLUT_LEFT_BUTTON)
+	{
+		// Invert the y coord.
+		int newY = oldH-y;
 	
-	for (list<Container*>::iterator i = containers.begin(); i != containers.end(); i++)
-		if ((*i)->isColliding(x,newY))
-			(*i)->activate();
+		for (list<Container*>::iterator i = containers.begin(); i != containers.end(); i++)
+			if ((*i)->isColliding(x,newY))
+				(*i)->activate();
+	}
 }	
 
 void mouseHover(int x, int y)

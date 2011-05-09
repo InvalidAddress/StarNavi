@@ -14,7 +14,7 @@
 
 #include "GSector.h"
 
-GSector::GSector(dirnode *r, list<filenode*> *f, float ra, float b, float w, string n)
+GSector::GSector(dirnode* r, list<filenode*>* f, float ra, float b, float w, string n)
 // Creates a sector, with a list of files and the given dimensions. Can take a
 // dirnode for hierarchical functionality, but it is not necessary.
 {	
@@ -53,6 +53,10 @@ GSector::~GSector()
 	clearStars();
 }
 
+
+//==============================================================================
+// Methods related to star management.
+//==============================================================================
 void GSector::buildStars()
 // Erases the current star list, then creates new stars within the sector's
 // physical range.
@@ -63,15 +67,20 @@ void GSector::buildStars()
 	
 	for (list<filenode*>::iterator i = files->begin(); i != files->end(); i++)
 	{
-		Star *temp = new Star(*i);
+		Star* temp = new Star(*i);
 		temp->randomPosition(getArcBegin(),getArcEnd(),0,radius,-thickness,thickness);
-		if (temp->getDistance()+(temp->getDiameter()/2) > radius)
-			temp->setDistance(radius-(temp->getDiameter()/2));
+		if (temp->getDistance()+(temp->getRadius()) > radius)
+			temp->setDistance(radius-(temp->getRadius()));
 		stars->push_back(temp);
 	}
 }
 
-float GSector::getMinStarDist(Star *s)
+list<Star*>* GSector::getStars()
+{
+	return stars;
+}
+
+float GSector::getMinStarDist(Star* s)
 {	
 	// Check if the chord length at this star's distance is long enough to
 	// accomodate the star's diameter.
@@ -82,31 +91,6 @@ float GSector::getMinStarDist(Star *s)
 	return lower_bound;
 }
 
-void GSector::clearStars()
-// Erases all of the stars, and deletes the star list.
-{
-	if (stars != NULL)
-	{
-		for (list<Star*>::iterator i = stars->begin(); i != stars->end(); i++)
-			stars->erase(i);
-		delete (stars);
-	}
-}
-
-
-void GSector::setName(string n)
-{
-	name = n;
-}
-
-string GSector::getName()
-{
-	return name;
-}
-
-//==============================================================================
-// Methods that work with the dimensions of the sector.
-//==============================================================================
 float GSector::getBiggestStarSize()
 // Get the diameter of the largest star in the sector.
 {
@@ -119,6 +103,22 @@ float GSector::getBiggestStarSize()
 	return d;
 }
 
+void GSector::clearStars()
+// Erases all of the stars, and deletes the star list.
+{
+	if (stars != NULL)
+	{
+		for (list<Star*>::iterator i = stars->begin(); i != stars->end(); i++)
+			stars->erase(i);
+		delete (stars);
+	}
+}
+//==============================================================================
+
+
+//==============================================================================
+// Methods for sector management.
+//==============================================================================
 float GSector::calcMinArcWidth()
 // Returns the smallest possible arc width, in degrees.
 {
@@ -130,6 +130,16 @@ float GSector::calcMinArcWidth()
 	theta *= 180.0/M_PI;
 	
 	return theta;
+}
+
+void GSector::setName(string n)
+{
+	name = n;
+}
+
+string GSector::getName()
+{
+	return name;
 }
 
 void GSector::setRadius(float r)
@@ -145,6 +155,11 @@ void GSector::setArcBegin(float b)
 void GSector::setArcWidth(float w)
 {
 	arc_width = w;
+}
+
+void GSector::setThickness(float t)
+{
+	thickness = t;
 }
 
 float GSector::getRadius()
@@ -166,6 +181,11 @@ float GSector::getArcWidth()
 {
 	return arc_width;
 }
+
+float GSector::getThickness()
+{
+	return thickness;
+}
 //==============================================================================
 
 
@@ -178,7 +198,7 @@ list<filenode*>* GSector::getFileList()
 	return files;
 }
 
-void GSector::setDirectory(dirnode *r)
+void GSector::setDirectory(dirnode* r)
 // Set the sector's root directory.
 {
 	root = r;
@@ -207,14 +227,14 @@ bool GSector::isSingleSectorMode()
 	return singleSectorMode;
 }
 
-void GSector::activate()
+Star* GSector::getSelected()
 {
 	list<Star*> active;
 	for (list<Star*>::iterator i = stars->begin(); i != stars->end(); i++)
 		if ((*i)->getCollideFlag())
 			active.push_back(*i);
 			
-	Star *curr;
+	Star* curr = NULL;
 	float near = -100;
 	for (list<Star*>::iterator i = active.begin(); i != active.end(); i++)
 	{
@@ -225,13 +245,21 @@ void GSector::activate()
 		}
 	}
 	
-	curr->activate();
+	return curr;
+}
+
+void GSector::activate()
+{
+	Star* curr = getSelected();
+	
+	if (curr != NULL)
+		curr->activate();
 }
 
 bool GSector::isColliding(float x, float y)
 // X and Y are actually polar coordinates in this case.
 {
-	if (singleSectorMode)
+	if (Star::starSelectionMode || singleSectorMode)
 	{
 		float t_x = y*radius*cos(x*(M_PI/180));
 		float t_y = y*radius*sin(x*(M_PI/180));
@@ -289,6 +317,7 @@ void GSector::drawMask()
 }
 
 void GSector::draw()
+// Draw the stars in the sector.
 {
 	for (list<Star*>::iterator i = stars->begin(); i != stars->end(); i++)
 		(*i)->draw();

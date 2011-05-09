@@ -11,7 +11,7 @@
 
 #include "Button.h"
 
-Button::Button(string l, AbstractFunctor *f, float x, float y, float w, float h, bool active)
+Button::Button(string l, AbstractFunctor* f, float x, float y, float w, float h, bool active)
 // Make a button with a label l, that performs action f when clicked.
 {
 	label = l;
@@ -23,7 +23,9 @@ Button::Button(string l, AbstractFunctor *f, float x, float y, float w, float h,
 	height = h;
 	
 	interactive = active;
-	text = new DrawText("/usr/share/fonts/truetype/freefont/FreeSans.ttf",label,14,xPos,yPos);
+	text = new DrawText(label);
+	
+	text->setPosition(xPos,yPos);
 }
 
 Button::~Button()
@@ -44,7 +46,7 @@ void Button::setInteract(bool c)
 }
 
 		
-void Button::setAction(AbstractFunctor *f)
+void Button::setAction(AbstractFunctor* f)
 // Set the button's action.
 {
 	act = f;

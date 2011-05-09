@@ -9,6 +9,7 @@
 //==============================================================================
 
 #include "Drawable.h"
+#include "DrawText.h"
 #include "fs_structs.h"
 
 #ifndef STAR
@@ -18,24 +19,33 @@ class Star:public Drawable
 {
 	private:
 		static GLuint star_texture;
-		filenode *file;
-		float diameter;
+		
+		filenode* file;
+		float radius, diameter;
 		float angle, distance, depth;
 		float color[4];
 		
-		void calculateDiameter();
+		DrawText* label;
+		
+		void calculateRadius();
 		void determineColor();
 		void initTexture();
 	
 	public:
-		Star(filenode *f);
+		static bool starSelectionMode;
+		
+		Star(filenode* f);
 		~Star();
 		
+		void setRadius(float r);
 		void setDiameter(float d);
 		void setDistance(float d);
 		void setAngle(float a);
 		void setDepth(float d);
 		
+		string getName();
+		DrawText* getLabel();
+		float getRadius();
 		float getDiameter();
 		float getDistance();
 		float getAngle();
@@ -44,6 +54,9 @@ class Star:public Drawable
 		void setPosition(float a, float dis, float dep);
 		void randomPosition(float a1, float a2, float dis1, float dis2, float dep1, float dep2);
 		void recalc();
+		
+		void initLabel();
+		void drawLabel();
 		
 		void activate();
 		bool isColliding(float x, float y);

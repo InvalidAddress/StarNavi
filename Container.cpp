@@ -13,7 +13,7 @@
 
 #include "Container.h"
 
-Container::Container(Drawable *d,AbstractFunctor *fn, float x, float y, float w, float h, anchor_type a)
+Container::Container(Drawable* d, AbstractFunctor* fn, float x, float y, float w, float h, anchor_type a)
 {
 	act = NULL;
 	

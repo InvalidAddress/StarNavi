@@ -17,7 +17,7 @@
 class Indexer
 {
 	private:
-		DirTree *dir_tree;
+		DirTree* dir_tree;
 		
 		void build(string dir);
 		

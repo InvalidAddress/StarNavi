@@ -28,13 +28,13 @@ class ButtonList:public Drawable
 		float vert_padding;
 		float horz_padding;
 		
-		list<Button*> *buttons;
+		list<Button*>* buttons;
 	
 	public:
 		ButtonList(float x, float y, float w, float h, int o = VERTICAL, float vp = 5, float hp = 5);
 		~ButtonList();
 		
-		void addButton(Button *b);
+		void addButton(Button* b);
 		list<Button*>* getButtonsList();
 		Button* getButton(size_t i);
 		

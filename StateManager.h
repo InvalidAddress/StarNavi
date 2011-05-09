@@ -20,7 +20,7 @@
 class StateManager:public Drawable
 {
 	private:
-		Indexer *indexer;
+		Indexer* indexer;
 		list<Galaxy*> galaxies;
 		list<Galaxy*>::iterator curr;
 		
@@ -29,6 +29,8 @@ class StateManager:public Drawable
 	public:
 		StateManager(string dir);
 		~StateManager();
+		
+		Galaxy* getCurrent();
 		
 		void forward();
 		void backward();

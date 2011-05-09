@@ -28,25 +28,27 @@ class GSector:public Drawable
 		float thickness;
 		
 		// File representation.
-		list<Star*> *stars;
-		list<filenode*> *files;
-		dirnode *root;
+		list<Star*>* stars;
+		list<filenode*>* files;
+		dirnode* root;
 		string name;
 		
 		// Render to texture.
 		GLuint texture;
-		GLbyte *tex_data;
+		GLbyte* tex_data;
 		int tex_size;
 		
-		float getMinStarDist(Star *s);
+		float getMinStarDist(Star* s);
 		void clearStars();
 		
 		bool singleSectorMode;
 		
 	public:
-		GSector(dirnode *r, list<filenode*> *f, float ra, float b, float w, string n = "");
+		GSector(dirnode* r, list<filenode*>* f, float ra, float b, float w, string n = "");
 		~GSector();
+		
 		void buildStars();
+		list<Star*>* getStars();
 		
 		void setName(string n);
 		string getName();
@@ -57,11 +59,13 @@ class GSector:public Drawable
 		void setRadius(float r);
 		void setArcBegin(float b);
 		void setArcWidth(float e);
+		void setThickness(float t);
 		
 		float getRadius();
 		float getArcBegin();
 		float getArcEnd();
 		float getArcWidth();
+		float getThickness();
 		
 		list<filenode*>* getFileList();
 		void setDirectory(dirnode *r);
@@ -69,6 +73,8 @@ class GSector:public Drawable
 		
 		void setSingleSectorMode(bool m);
 		bool isSingleSectorMode();
+		
+		Star* getSelected();
 		
 		void activate();
 		bool isColliding(float x, float y);

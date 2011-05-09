@@ -22,13 +22,13 @@ class MimeIdentifier
 		list< vector<string> > default_apps;
 		
 		void buildDefaultAppsList();
-		void setDefaultApp(filenode *f);
-		void setFileType(filenode *f);
-		void enumFileType(filenode *f);
+		void setDefaultApp(filenode* f);
+		void setFileType(filenode* f);
+		void enumFileType(filenode* f);
 		
 	public:
 		MimeIdentifier();
-		void obtainType(filenode *f);
+		void obtainType(filenode* f);
 };
 
 #endif

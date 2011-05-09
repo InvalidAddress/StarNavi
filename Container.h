@@ -25,11 +25,11 @@ class Container:public Drawable
 		float originalW;
 		float originalH;
 		
-		Drawable *content;
-		AbstractFunctor *act;
+		Drawable* content;
+		AbstractFunctor* act;
 
 	public:
-		Container(Drawable *d,AbstractFunctor *fn, float x, float y, float w, float h, anchor_type a = CENTER);
+		Container(Drawable* d,AbstractFunctor* fn, float x, float y, float w, float h, anchor_type a = CENTER);
 		~Container();
 		
 		Drawable* getContent();

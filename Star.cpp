@@ -22,6 +22,8 @@ Star::Star(filenode* f)
 	
 	recalc();
 	
+	label = NULL;
+	
 	if (glIsTexture(star_texture) == GL_FALSE)	initTexture();
 }
 
@@ -34,10 +36,11 @@ Star::~Star()
 //==============================================================================
 // Automatic/private methods.
 //==============================================================================
-void Star::calculateDiameter()
+void Star::calculateRadius()
 // Set the radius of the star based on the size of the file.
 {
-	diameter = log10((float)(file->attr.st_size)+1)/log10(1000.0) + 1;
+	radius = log10((float)(file->attr.st_size)+1)/log10(1000.0) + 1;
+	diameter = radius * 2;
 }
 
 void Star::determineColor()
@@ -67,7 +70,7 @@ void Star::determineColor()
 void Star::recalc()
 // In the case that the file has changed in some way, refresh the star data.
 {
-	calculateDiameter();
+	calculateRadius();
 	determineColor();
 }
 //==============================================================================
@@ -76,22 +79,36 @@ void Star::recalc()
 //==============================================================================
 // State setters.
 //==============================================================================
+void Star::setRadius(float r)
+// Set the radius of the star.
+{
+	radius = r;
+	diameter = radius * 2;
+}
+
 void Star::setDiameter(float d)
 // Set the diameter of the star.
 {
 	diameter = d;
+	radius = diameter/2;
 }
 
 void Star::setDistance(float d)
 // Set the distance from the origin.
 {
 	distance = d;
+	
+	xPos = distance*cos(angle*M_PI/180);
+	yPos = distance*sin(angle*M_PI/180);
 }
 
 void Star::setAngle(float a)
 // Set the angle around the origin.
 {
 	angle = a;
+	
+	xPos = distance*cos(angle*M_PI/180);
+	yPos = distance*sin(angle*M_PI/180);
 }
 
 void Star::setDepth(float d)
@@ -105,6 +122,24 @@ void Star::setDepth(float d)
 //==============================================================================
 // State getters.
 //==============================================================================
+string Star::getName()
+// Get the name of the star.
+{
+	return file->name;
+}
+
+DrawText* Star::getLabel()
+// Get the text object of the star.
+{
+	return label;
+}
+
+float Star::getRadius()
+// Get the radius of the star.
+{
+	return radius;
+}
+
 float Star::getDiameter()
 // Get the diameter of the star.
 {
@@ -142,6 +177,9 @@ void Star::randomPosition(float a1, float a2, float dis1, float dis2, float dep1
 	angle		= mtrand.rand(a2-a1)+a1;
 	distance	= mtrand.rand(dis2-dis1)+dis1;
 	depth		= mtrand.rand(dep2-dep1)+dep1;
+	
+	xPos = distance*cos(angle*M_PI/180);
+	yPos = distance*sin(angle*M_PI/180);
 }
 
 void Star::setPosition(float a, float dis, float dep)
@@ -150,6 +188,9 @@ void Star::setPosition(float a, float dis, float dep)
 	angle = a;
 	distance = dis;
 	depth = dep;
+	
+	xPos = distance*cos(angle*M_PI/180);
+	yPos = distance*sin(angle*M_PI/180);
 }
 //==============================================================================
 
@@ -164,7 +205,7 @@ void Star::activate()
 	if (pid == 0)
 	{
 		string f = file->path + file->name;
-		char *args[3];
+		char* args[3];
 		args[0] = const_cast<char*>(file->default_app.c_str());
 		args[1] = const_cast<char*>(f.c_str());
 		args[2] = (char*)0;
@@ -181,7 +222,7 @@ void Star::activate()
 bool Star::isColliding(float x, float y)
 // If the mouse is within the perimeter of a star.
 {
-	collide_flag = y <= diameter/2;
+	collide_flag = y <= radius;
 	
 //	cout << y << endl;
 	
@@ -217,6 +258,31 @@ void Star::initTexture()
 //------------------------------------------------------------------------------
 }
 
+void Star::initLabel()
+{
+	if (label == NULL)
+		label = new DrawText(file->name);
+}	
+
+void Star::drawLabel()
+// Draw the name of the star.
+{
+	glPushMatrix();
+		glTranslatef(label->getPosX(),label->getPosY(),0);
+		glScalef(label->getWidth()/2+5,label->getHeight()/2+4,1);
+		
+		glBegin(GL_QUADS);
+			glColor4f(.2,.2,.2,.25);
+			glVertex3d(-1,1,-1);
+			glVertex3d(-1,-1,-1);
+			glVertex3d(1,-1,-1);
+			glVertex3d(1,1,-1);
+		glEnd();
+	glPopMatrix();
+	
+	label->draw();
+}
+
 void Star::draw()
 // Draw the star onto the current framebuffer.
 {
@@ -229,7 +295,7 @@ void Star::draw()
 	glPushMatrix();
 		glRotatef(angle,0,0,1);
 		glTranslatef(distance,0,depth);
-		glScalef(diameter,diameter,1);
+		glScalef(radius,radius,1);
 	
 		glColor4fv(color);
 		glBegin(GL_QUADS);
@@ -239,7 +305,6 @@ void Star::draw()
 			glTexCoord2f(1,1);	glVertex2d(1,1);
 		glEnd();
 	
-		glFlush();
 	glPopMatrix();
 	glBindTexture(GL_TEXTURE_2D, 0);
 	

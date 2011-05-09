@@ -24,20 +24,20 @@ class Button:public Drawable
 		
 		string label;
 
-		AbstractFunctor *act;
+		AbstractFunctor* act;
 		
-		DrawText *text;
+		DrawText* text;
 		
 		void buildText();
 		
 	public:
-		Button(string l, AbstractFunctor *f, float x, float y, float w, float h, bool active = true);
+		Button(string l, AbstractFunctor* f, float x, float y, float w, float h, bool active = true);
 		~Button();
 		
 		bool isInteractive();
 		void setInteract(bool c);
 		
-		void setAction(AbstractFunctor *f);
+		void setAction(AbstractFunctor* f);
 		void activate();
 		
 		bool isColliding(float x, float y);

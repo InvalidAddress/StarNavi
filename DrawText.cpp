@@ -10,7 +10,7 @@
 
 #include "DrawText.h"
 
-DrawText::DrawText(string f,string t,int s,float x,float y,anchor_type a)
+DrawText::DrawText(string t,string f,int s,float x,float y,anchor_type a)
 {
 	xPos = x;
 	yPos = y;
@@ -21,14 +21,19 @@ DrawText::DrawText(string f,string t,int s,float x,float y,anchor_type a)
 
 	anchor = a;
 
-	buildTexture();
+	rendered_text = 0;
+
+	initTexture();
+	refreshTexture();
 }
 	
 DrawText::~DrawText()
 {
 }
 
-
+//==============================================================================
+// Setters and getters.
+//==============================================================================
 void DrawText::setWidth(float w)
 {
 	width = w;
@@ -42,36 +47,50 @@ void DrawText::setHeight(float h)
 }
 
 
-void DrawText::buildTexture()
-// Using the stored font and text, build a texture.
+void DrawText::setFontSize(int s)
 {
-	// Make SDL surfaces to render text to.
-	SDL_Surface *initial = NULL;
-	
-	// Open the font.
-	TTF_Font *font = TTF_OpenFont(font_path.c_str(),size);
-	SDL_Color fg_color = {255,255,255,255};
-	
-	// Make the initial text buffer.	
-	initial = TTF_RenderText_Blended(font, text.c_str(), fg_color);
-	TTF_CloseFont(font);
+	size = s;
+}
 
-	// Store the buffer's width and height.
-	width	= initial->w;
-	height	= initial->h;
-	rendered_text = 0;
+int DrawText::getFontSize()
+{
+	return size;
+}
 
-	aspect_ratio = (float)width/(float)height;
 
-//	cout << text_w << ", " << text_h << endl;
-//	for (size_t i = 0; i < (size_t)(buffer->h)*(size_t)(buffer->w); i++)
-//		cout << ((unsigned int *)buffer->pixels)[i]<< " ";
-//	cout << endl;
+void DrawText::setFont(string f)
+{
+	font_path = f;
+}
 
+string DrawText::getFont()
+{
+	return font_path;
+}
+
+
+void DrawText::setText(string t)
+{
+	text = t;
+}
+
+string DrawText::getText()
+{
+	return text;
+}
+//==============================================================================
+
+
+//==============================================================================
+// Methods for drawing.
+//==============================================================================
+void DrawText::initTexture()
+// Initialize the object's texture.
+{
 	//Generate an OpenGL 2D texture from the SDL_Surface*
-	glGenTextures(1, &rendered_text);
+	glGenTextures(1, &rendered_text);	
 	glBindTexture(GL_TEXTURE_2D, rendered_text);
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // Set the state of the current texture
 //------------------------------------------------------------------------------
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -80,14 +99,40 @@ void DrawText::buildTexture()
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 //------------------------------------------------------------------------------
- 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, initial->pixels);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void DrawText::refreshTexture()
+// Using the stored font and text, build a texture.
+{
+	// Make SDL surfaces to render text to.
+	SDL_Surface* initial = NULL;
+	
+	// Open the font.
+	TTF_Font* font = TTF_OpenFont(font_path.c_str(),size);
+	SDL_Color fg_color = {255,255,255,255};
+	
+	// Make the initial text buffer.	
+	initial = TTF_RenderText_Blended(font, text.c_str(), fg_color);
+	TTF_CloseFont(font);
+
+	// Store the buffer's width and height.
+	tex_data = (GLubyte*)(initial->pixels);
+	width	= initial->w;
+	height	= initial->h;
+
+	// To maintain the text's shape while drawing.
+	aspect_ratio = (float)width/(float)height;
+
+	// Bind the texture, set the its pixel map, then release.
+	glBindTexture(GL_TEXTURE_2D, rendered_text);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, tex_data);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	
 	// Free the surfaces
 	SDL_FreeSurface(initial);
-	
-	printGlError();
+		
+//	printGlError();
 }
 		
 void DrawText::draw()
@@ -126,3 +171,4 @@ void DrawText::draw()
 	
 	glDisable(GL_TEXTURE_2D);
 }
+//==============================================================================

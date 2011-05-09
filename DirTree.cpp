@@ -30,7 +30,7 @@ DirTree::DirTree(string dir = "./")
 	else
 	{
 		cout << "trying to identify directory\n";
-		char *currpath = getcwd(NULL, PATH_MAX);
+		char* currpath = getcwd(NULL, PATH_MAX);
 		if (currpath != NULL)
 			root->name = (string)currpath;
 		else
@@ -67,7 +67,7 @@ void DirTree::add(string p, string n)
 // Method to insert a file into its appropriate place in the file list.
 {	
 	// Create a filenode and set its attributes.	
-	filenode *tempf = new filenode;
+	filenode* tempf = new filenode;
 	string temp_string = p + n;
 	tempf->name = n;
 	tempf->path = p;
@@ -81,7 +81,7 @@ void DirTree::add(string p, string n)
 	
 	// Set the current node to the root of the directory tree, and start an
 	// iterator on the current node's directory list.
-	dirnode *currnode = root;
+	dirnode* currnode = root;
 	list<dirnode*>::iterator d = currnode->dirs.begin();
 	
 	// While there are still more paths to navigate...
@@ -101,7 +101,7 @@ void DirTree::add(string p, string n)
 		// If current directory does not exist, make it.
 		else
 		{
-			dirnode *tempd = new dirnode;
+			dirnode* tempd = new dirnode;
 			tempd->name = path_toks[i];
 			currnode->dirs.insert(d,tempd);
 			d--;
@@ -126,7 +126,7 @@ dirnode* DirTree::getDir(string p)
 	
 	// Set the current node to the root of the directory tree, and start an
 	// iterator on the current node's directory list.
-	dirnode *currnode = root;
+	dirnode* currnode = root;
 	list<dirnode*>::iterator d = currnode->dirs.begin();
 	
 	// While there are still more paths to navigate...

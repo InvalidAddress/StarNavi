@@ -21,9 +21,9 @@
 class DirTree
 {
 	private:
-		MimeIdentifier *mrmime;
+		MimeIdentifier* mrmime;
 		int numfiles;
-		dirnode *root;
+		dirnode* root;
 		
 	public:
 		DirTree(string s);
@@ -34,7 +34,7 @@ class DirTree
 		filenode* getFile(string p, string n);
 		
 		void clearTree();
-		void dropBranch(dirnode *d);
+		void dropBranch(dirnode* d);
 		
 		list<filenode*>* getFileList();
 		string getRootPath();

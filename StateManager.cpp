@@ -21,7 +21,7 @@ StateManager::StateManager(string dir)
 {
 	indexer = new Indexer(dir);
 	
-	Galaxy *temp = new Galaxy(indexer->getDirectoryTree()->getRootNode());	
+	Galaxy* temp = new Galaxy(indexer->getDirectoryTree()->getRootNode());	
 	galaxies.push_back(temp);
 	
 	curr = galaxies.begin();
@@ -39,8 +39,14 @@ StateManager::~StateManager()
 
 
 //==============================================================================
-// Methods for changing the state.
+// Methods for observing/changing the state.
 //==============================================================================	
+Galaxy* StateManager::getCurrent()
+// Return the current galaxy.
+{
+	return (*curr);
+}
+
 void StateManager::forward()
 // Move forwards in history, if possible.
 {
@@ -64,7 +70,7 @@ void StateManager::navigate()
 	
 	if (selected != NULL)
 	{
-		if ((*curr)->getSectors()->size() == 1)
+		if ((*curr)->getSectors()->size() == 1 || Star::starSelectionMode)
 		{
 			selected->activate();
 			return;
@@ -74,15 +80,15 @@ void StateManager::navigate()
 		i++;
 		galaxies.erase(i, galaxies.end());
 	
-		dirnode *dir = selected->getDirectory();
-		Galaxy *temp;
+		dirnode* dir = selected->getDirectory();
+		Galaxy* temp;
 		
 		if (dir != NULL)
-			temp = new Galaxy(dir,NULL,(*curr)->getMode());
+			temp = new Galaxy(dir,NULL,(*curr)->getClusterMode());
 		else
 		{
-			list<filenode*> *files = selected->getFileList();
-			temp = new Galaxy(NULL,files,(*curr)->getMode(),(*curr)->getDirectory()->name);
+			list<filenode*>* files = selected->getFileList();
+			temp = new Galaxy(NULL,files,(*curr)->getClusterMode(),(*curr)->getDirectory()->name);
 		}
 		
 		galaxies.push_back(temp);

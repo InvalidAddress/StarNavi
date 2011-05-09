@@ -37,23 +37,23 @@ class Galaxy:public Drawable
 		float thickness;
 		
 		// Stores galaxy's files and directories.
-		list<GSector*> *sectors;
-		list<filenode*> *files;
-		dirnode *root;
+		list<GSector*>* sectors;
+		list<filenode*>* files;
+		dirnode* root;
 		
 		string name;
 		
-		list<string> *tags;
+		list<string>* tags;
 		
 		GSector* selected;
 		
 		// Render to texture.
 		GLuint texture;
-		GLubyte *tex_data;
+		GLubyte* tex_data;
 		int tex_size;
 		
 		// How to cluster files in the galaxy.
-		cluster_type mode;
+		cluster_type cluster_mode;
 		
 		void buildSectors();
 		void buildHierarchy();
@@ -67,8 +67,11 @@ class Galaxy:public Drawable
 		void clearSectors();
 		
 	public:
-		Galaxy(dirnode *r, list<filenode*> *f = NULL, cluster_type m = DIRECTORY, string n = "");
+		Galaxy(dirnode* r, list<filenode*>* f = NULL, cluster_type m = DIRECTORY, string n = "");
 		~Galaxy();
+		
+		void setName(string n);
+		string getName();
 		
 		void setRotation(float x, float y);
 		void setRotationSpeed(float s);
@@ -76,14 +79,17 @@ class Galaxy:public Drawable
 		float getRotationY();
 		float getRotationSpeed();
 		
-		void setMode(cluster_type m);
-		cluster_type getMode();
+		void setClusterMode(cluster_type m);
+		cluster_type getClusterMode();
 		
-		void setTags(list<string> *t);
+		void setTags(list<string>* t);
 		list<string>* getTags();
 		
-		void setDirectory(dirnode *r);
+		void setDirectory(dirnode* r);
 		dirnode* getDirectory();
+		void setFileList(list<filenode*>* f);
+		list<filenode*>* getFileList();
+		
 		
 		list<GSector*>* getSectors();
 		
