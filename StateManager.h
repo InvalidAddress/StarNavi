@@ -36,6 +36,13 @@ class StateManager:public Drawable
 		void backward();
 		void navigate();
 		
+		void setDirectoryMode();
+		void setNameMode();
+		void setDateMode();
+		void setSizeMode();
+		void setTypeMode();
+		void setTagsMode();		
+		
 		bool isColliding(float x, float y);
 		
 		void draw();

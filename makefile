@@ -1,10 +1,10 @@
 SOURCES =	MimeIdentifier.cpp DirTree.cpp Indexer.cpp Drawable.cpp DrawText.cpp \
-			Star.cpp GSector.cpp Galaxy.cpp StateManager.cpp Container.cpp Button.cpp \
-			ButtonList.cpp StatusBar.cpp Main.cpp
+			LabeledDrawable.cpp Star.cpp GSector.cpp Galaxy.cpp StateManager.cpp \
+			Container.cpp Button.cpp ButtonList.cpp StatusBar.cpp Main.cpp
 			
-OBJECTS = 	MimeIdentifier.o DirTree.o Indexer.o Drawable.o DrawText.o Star.o \
-			GSector.o Galaxy.o StateManager.o Container.o Button.o ButtonList.o \
-			StatusBar.o Main.o
+OBJECTS = 	MimeIdentifier.o DirTree.o Indexer.o Drawable.o DrawText.o \
+			LabeledDrawable.o Star.o GSector.o Galaxy.o StateManager.o \
+			Container.o Button.o ButtonList.o StatusBar.o Main.o
 			
 HEADERS =	global_header.h fs_structs.h
 

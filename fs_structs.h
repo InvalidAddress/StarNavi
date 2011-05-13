@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		6 March 2011
-// Last Updated:		23 March 2011
+// Last Updated:		13 May 2011
 //
 // File name:			fs_structs.h
 // Programmer:			Matthew Hydock
@@ -44,6 +44,7 @@ typedef struct filenode
 typedef struct dirnode
 {
 	string name;
+	string path;
 	list<filenode*> files;
 	list<struct dirnode*> dirs;
 	list<filenode*> all_files;

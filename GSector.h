@@ -18,7 +18,7 @@
 #ifndef GSECTOR
 #define GSECTOR
 
-class GSector:public Drawable
+class GSector:public LabeledDrawable
 {
 	private:
 		// Real dimensions of the sector.
@@ -31,7 +31,6 @@ class GSector:public Drawable
 		list<Star*>* stars;
 		list<filenode*>* files;
 		dirnode* root;
-		string name;
 		
 		// Render to texture.
 		GLuint texture;

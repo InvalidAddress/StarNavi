@@ -17,9 +17,9 @@
 #ifndef GALAXY
 #define GALAXY
 
-enum cluster_type{DIRECTORY,NAME,TIME,SIZE,TYPE,TAG};
+enum cluster_type{DIRECTORY,NAME,DATE,SIZE,TYPE,TAGS};
 
-class Galaxy:public Drawable
+class Galaxy:public LabeledDrawable
 {
 	private:
 		// How the galaxy is drawn (external).
@@ -41,8 +41,6 @@ class Galaxy:public Drawable
 		list<filenode*>* files;
 		dirnode* root;
 		
-		string name;
-		
 		list<string>* tags;
 		
 		GSector* selected;
@@ -52,13 +50,15 @@ class Galaxy:public Drawable
 		GLubyte* tex_data;
 		int tex_size;
 		
+		DrawText* starSelectionLabel;
+		
 		// How to cluster files in the galaxy.
 		cluster_type cluster_mode;
 		
 		void buildSectors();
 		void buildHierarchy();
 		void buildByName();
-		void buildByTime();
+		void buildByDate();
 		void buildBySize();
 		void buildByType();
 		void buildByTags();
@@ -82,14 +82,13 @@ class Galaxy:public Drawable
 		void setClusterMode(cluster_type m);
 		cluster_type getClusterMode();
 		
-		void setTags(list<string>* t);
+		void buildTags();
 		list<string>* getTags();
 		
 		void setDirectory(dirnode* r);
 		dirnode* getDirectory();
 		void setFileList(list<filenode*>* f);
 		list<filenode*>* getFileList();
-		
 		
 		list<GSector*>* getSectors();
 		

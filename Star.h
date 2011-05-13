@@ -8,14 +8,13 @@
 // File description:	Header to the star objects.
 //==============================================================================
 
-#include "Drawable.h"
-#include "DrawText.h"
+#include "LabeledDrawable.h"
 #include "fs_structs.h"
 
 #ifndef STAR
 #define STAR
 
-class Star:public Drawable
+class Star:public LabeledDrawable
 {
 	private:
 		static GLuint star_texture;
@@ -24,8 +23,6 @@ class Star:public Drawable
 		float radius, diameter;
 		float angle, distance, depth;
 		float color[4];
-		
-		DrawText* label;
 		
 		void calculateRadius();
 		void determineColor();
@@ -44,7 +41,6 @@ class Star:public Drawable
 		void setDepth(float d);
 		
 		string getName();
-		DrawText* getLabel();
 		float getRadius();
 		float getDiameter();
 		float getDistance();
@@ -54,9 +50,6 @@ class Star:public Drawable
 		void setPosition(float a, float dis, float dep);
 		void randomPosition(float a1, float a2, float dis1, float dis2, float dep1, float dep2);
 		void recalc();
-		
-		void initLabel();
-		void drawLabel();
 		
 		void activate();
 		bool isColliding(float x, float y);

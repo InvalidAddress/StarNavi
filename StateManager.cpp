@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		6 April 2011
-// Last Updated:		28 April 2011
+// Last Updated:		13 May 2011
 //
 // File name:			StateManager.h
 // Programmer:			Matthew Hydock
@@ -88,13 +88,40 @@ void StateManager::navigate()
 		else
 		{
 			list<filenode*>* files = selected->getFileList();
-			temp = new Galaxy(NULL,files,(*curr)->getClusterMode(),(*curr)->getDirectory()->name);
+			temp = new Galaxy(NULL,files,(*curr)->getClusterMode(),(*curr)->getName());
 		}
 		
 		galaxies.push_back(temp);
 		curr++;
 	}
 }
+//==============================================================================
+
+
+//==============================================================================
+// Methods to change the clustering mode of the current set.
+//==============================================================================
+void StateManager::setDirectoryMode()
+// Backtrack until the current galaxy is in directory mode.
+{
+	while ((*curr)->getClusterMode() != DIRECTORY && curr != galaxies.begin())
+		curr--;
+}
+
+void StateManager::setNameMode()
+{}
+
+void StateManager::setDateMode()
+{}
+
+void StateManager::setSizeMode()
+{}
+
+void StateManager::setTypeMode()
+{}
+
+void StateManager::setTagsMode()
+{}
 //==============================================================================
 
 

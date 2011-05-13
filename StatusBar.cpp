@@ -1,3 +1,14 @@
+//==============================================================================
+// Date Created:		6 May 2011
+// Last Updated:		13 May 2011
+//
+// File name:			StatusBar.cpp
+// Programmer:			Matthew Hydock
+//
+// File description:	A simple status bar that displays the current directory,
+//						and the number of files in that directory tree.
+//==============================================================================
+
 #include "StatusBar.h"
 
 StatusBar::StatusBar(StateManager* sm)
@@ -6,12 +17,12 @@ StatusBar::StatusBar(StateManager* sm)
 
 	curr = state->getCurrent();
 	
-	string n = "" + curr->getDirectory()->all_files.size();
+	directory = new DrawText("a");
+	num_files = new DrawText("b");
 	
-	directory = new DrawText(curr->getName());
-	num_files = new DrawText(n);
-	
-	num_files->setAnchor(LEFT_UPPER);
+	directory->setFontSize(12);
+
+	refreshState();
 }
 
 StatusBar::~StatusBar()
@@ -36,18 +47,18 @@ void StatusBar::refreshState()
 	dirnode* dir = curr->getDirectory();
 	if (dir == NULL)
 	{
-		cout << "dir is null, using filelist\n";
+//		cout << "dir is null, using filelist\n";
 		num = curr->getFileList()->size();
-		cout << "got num files: " << num << endl;
+//		cout << "got num files: " << num << endl;
 	}
 	else
 	{
-		cout << "dir is " << curr->getDirectory()->name << endl;
+//		cout << "dir is " << curr->getDirectory()->name << endl;
 		num = curr->getDirectory()->all_files.size();
-		cout << "got num files: " << num << endl;
+//		cout << "got num files: " << num << endl;
 	}
 
-	oss << num;
+	oss << " Files: " << num;
 	
 	directory->setText(curr->getName());
 	num_files->setText(oss.str());
@@ -57,7 +68,7 @@ void StatusBar::refreshState()
 	directory->refreshTexture();
 	num_files->refreshTexture();
 	
-	cout << "rebuilt the status bar\n";
+//	cout << "rebuilt the status bar\n";
 }
 	
 void StatusBar::draw()
@@ -74,7 +85,7 @@ void StatusBar::draw()
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
 	directory->setPosition(0,0);
-	num_files->setPosition((float)p[2]/2,0);
+	num_files->setPosition(num_files->getWidth()/2+(float)p[2]/-2,0);
 	
 	directory->draw();
 	num_files->draw();

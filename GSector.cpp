@@ -31,6 +31,8 @@ GSector::GSector(dirnode* r, list<filenode*>* f, float ra, float b, float w, str
 	else
 		name = n;
 	
+	label = NULL;
+	
 	singleSectorMode = false;
 	
 	radius = ra;
@@ -286,7 +288,7 @@ bool GSector::isColliding(float x, float y)
 
 //==============================================================================
 // Drawing methods.
-//==============================================================================		
+//==============================================================================	
 void GSector::drawMask()
 // Accentuate the sector, by darkening the rest of the galaxy, and drawing a 
 // glowing outline around the sector.

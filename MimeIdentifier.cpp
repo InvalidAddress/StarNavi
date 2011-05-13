@@ -18,16 +18,16 @@ void MimeIdentifier::buildDefaultAppsList()
 {
 	ifstream default_file("/usr/share/applications/defaults.list");
 	string line;
-	vector<string> toks;
+	vector<string>* toks = NULL;
 	
 	// Begin reading lines and looking for the appropriate type.
 	getline(default_file,line);
 	getline(default_file,line);
 	while (!default_file.eof())
 	{
-		toks = tokenize(line,"=");
+		toks = tokenizeV(line,"=");
 
-		if (!toks.empty()) default_apps.push_back(toks);
+		if (toks != NULL) default_apps.push_back(*toks);
 		
 		getline(default_file,line);
 	}

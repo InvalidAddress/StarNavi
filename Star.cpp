@@ -19,6 +19,7 @@ Star::Star(filenode* f)
 // pulled and the star's attributes will be defined.
 {
 	file = f;
+	name = file->name;
 	
 	recalc();
 	
@@ -128,12 +129,6 @@ string Star::getName()
 	return file->name;
 }
 
-DrawText* Star::getLabel()
-// Get the text object of the star.
-{
-	return label;
-}
-
 float Star::getRadius()
 // Get the radius of the star.
 {
@@ -226,8 +221,8 @@ bool Star::isColliding(float x, float y)
 	
 //	cout << y << endl;
 	
-	if (collide_flag)
-		cout << "colliding with file " << file->name << endl;
+//	if (collide_flag)
+//		cout << "colliding with file " << file->name << endl;
 	
 	return collide_flag;
 }
@@ -256,31 +251,6 @@ void Star::initTexture()
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 //------------------------------------------------------------------------------
-}
-
-void Star::initLabel()
-{
-	if (label == NULL)
-		label = new DrawText(file->name);
-}	
-
-void Star::drawLabel()
-// Draw the name of the star.
-{
-	glPushMatrix();
-		glTranslatef(label->getPosX(),label->getPosY(),0);
-		glScalef(label->getWidth()/2+5,label->getHeight()/2+4,1);
-		
-		glBegin(GL_QUADS);
-			glColor4f(.2,.2,.2,.25);
-			glVertex3d(-1,1,-1);
-			glVertex3d(-1,-1,-1);
-			glVertex3d(1,-1,-1);
-			glVertex3d(1,1,-1);
-		glEnd();
-	glPopMatrix();
-	
-	label->draw();
 }
 
 void Star::draw()

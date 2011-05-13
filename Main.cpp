@@ -106,6 +106,11 @@ void buildGUI()
 	Button *forward = new Button("-->",f_forward,0,0,140,30);
 	bl->addButton(forward);
 
+	// Create the 'by directory' button, and add to button list.
+	AbstractFunctor *f_dir = new NullFunctor();
+	Button *dir = new Button("By Directory",f_dir,0,0,140,30);
+	bl->addButton(dir);
+
 	// Create the 'by name' button, and add to button list.
 	AbstractFunctor *f_name = new NullFunctor();
 	Button *name = new Button("By Name",f_name,0,0,140,30);
@@ -120,6 +125,16 @@ void buildGUI()
 	AbstractFunctor *f_size = new NullFunctor();
 	Button *size = new Button("By Size",f_size,0,0,140,30);
 	bl->addButton(size);
+
+	// Create the 'by type' button, and add to button list.
+	AbstractFunctor *f_type = new NullFunctor();
+	Button *type = new Button("By Type",f_type,0,0,140,30);
+	bl->addButton(type);
+	
+	// Create the 'by tags' button, and add to button list.
+	AbstractFunctor *f_tags = new NullFunctor();
+	Button *tags = new Button("By Tags",f_tags,0,0,140,30);
+	bl->addButton(tags);
 
 	// Create new container to hold button list.
 	Container *c2 = new Container(bl,f_bl,1,0,140,525,LEFT_UPPER);

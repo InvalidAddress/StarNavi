@@ -1,12 +1,13 @@
 //==============================================================================
 // Date Created:		6 May 2011
-// Last Updated:		6 May 2011
+// Last Updated:		13 May 2011
 //
 // File name:			StatusBar.h
 // Programmer:			Matthew Hydock
 //
-// File description:	A header for a simple graphic to display the current
-//						directory, and the number of files in that directory.
+// File description:	A header for a simple status bar that displays the
+//						current directory's name and the number of files in that
+//						directory tree.
 //==============================================================================
 
 #include "DrawText.h"

@@ -29,13 +29,8 @@
 #include <string>
 #include <list>
 #include <vector>
+#include <algorithm>
 
-
-#ifdef LList
-#define list list<T>
-#elif defined VList
-#define list vector<t>
-#endif
 
 #include "MersenneTwister.h"
 #include "Functors.h"
@@ -74,14 +69,12 @@ extern inline bool isLessThan(string s1, string s2)
 	return diff < 0;
 }
 
-extern inline vector<string> tokenize(string s, string del)
-// Split up a string and store the segments into a list, using a user-specified
-// delimiter.
+extern inline list<string>* tokenizeL(string s, string del)
 {
 	if (s.compare("") == 0)
-		return vector<string>();
+		return NULL;
 		
-	list<string> l;
+	list<string>* l = new list<string>();
 	char* cs = (char*)malloc(sizeof(char) * (s.size()+1));
 	char* ptr;
 	
@@ -91,23 +84,34 @@ extern inline vector<string> tokenize(string s, string del)
 	// Place tokens in a list.
 	while (ptr != NULL)
 	{
-		l.push_back((string)ptr);
+		l->push_back((string)ptr);
 		ptr = strtok(NULL,del.c_str());
 	}
 	
+	free(cs);
+	
+	return l;
+}
+
+extern inline vector<string>* tokenizeV(string s, string del)
+// Split up a string and store the segments into a list, using a user-specified
+// delimiter.
+{
+	if (s.compare("") == 0)
+		return NULL;
+		
+	list<string>* l = tokenizeL(s,del);
+	
 	// Convert list to an array.
-	vector<string> sv (l.size(),"");
-	list<string>::iterator it = l.begin();
-	for (unsigned int i = 0; i < sv.size(); i++)
+	vector<string>* v = new vector<string>(l->size(),"");
+	list<string>::iterator it = l->begin();
+	for (unsigned int i = 0; i < v->size(); i++)
 	{
-		sv[i] = *it;
+		v->at(i) = *it;
 		it++;
 	}
 	
-	// cleanup
-	free(cs);
-	
-	return sv;
+	return v;
 }
 
 template<typename T> extern inline void append(list<T> *l1, list<T> *l2)
@@ -117,5 +121,11 @@ template<typename T> extern inline void append(list<T> *l1, list<T> *l2)
 	typename list<T>::iterator i2 = l2->begin();
 	for(; i2 != l2->end(); i2++)
 		l1->push_back(*i2);
+}
+
+template<typename T> extern inline bool contains(list<T> *l, T i)
+// Checks to see if the given list contains the requested item.
+{
+	return (find(l->begin(),l->end(),i) != l->end());
 }
 #endif

@@ -29,7 +29,7 @@ Galaxy::Galaxy(dirnode *r, list<filenode*> *f, cluster_type m, string n)
 	}
 	
 	if (root != NULL && n == "")
-		name = root->name;
+		name = root->path + root->name;
 	else
 		name = n;
 	
@@ -42,10 +42,11 @@ Galaxy::Galaxy(dirnode *r, list<filenode*> *f, cluster_type m, string n)
 	thickness = pow(radius*2.0,.5);
 	
 	setRotation(0,0);
-	setRotationSpeed(0.0);
+	setRotationSpeed(0.02);
 	rotZ = 0;
 	
 	tags = NULL;
+	buildTags();
 	cluster_mode = m;
 	
 	sectors = NULL;
@@ -55,6 +56,14 @@ Galaxy::Galaxy(dirnode *r, list<filenode*> *f, cluster_type m, string n)
 	tex_data = NULL;
 	initTexture();
 	refreshTex();
+	
+	label = NULL;
+	initLabel();
+	
+	starSelectionLabel = new DrawText(" Star Selection Mode");
+	starSelectionLabel->setAnchor(LEFT_UPPER);
+	starSelectionLabel->setColor(0,0,0,1);
+	starSelectionLabel->refreshTexture();
 	
 	cout << "galaxy built\n";
 }
@@ -115,10 +124,32 @@ string Galaxy::getName()
 	return name;
 }
 
-void Galaxy::setTags(list<string> *t)
-// Set the galaxy's tag list.
+void Galaxy::buildTags()
+// Build the galaxy's tag list.
 {
-	tags = t;
+	cout << "building tags" << endl;
+	
+	// Clean out the original tags list, if it wasn't empty to begin with.
+	if (tags != NULL)	delete(tags);
+	tags = new list<string>;
+	
+	// Temporary list for the current file's tags.
+	list<string>* temp = NULL;
+	
+	// Go through all of the file nodes, and try to add that file's tags to the
+	// tag list. If the list already contains the current tag, skip it.
+	for (list<filenode*>::iterator i = files->begin(); i != files->end(); i++)
+	{
+		temp = &((*i)->tags);
+		for (list<string>::iterator j = temp->begin(); j != temp->end(); j++)
+			if (!contains(tags,*j))
+			{
+				cout << *j << endl;
+				tags->push_back(*j);
+			}
+	}
+	
+	cout << "size of tags list: " << tags->size() << endl;	
 }
 
 list<string>* Galaxy::getTags()
@@ -183,13 +214,13 @@ void Galaxy::buildSectors()
 						break;
 		case NAME:		buildByName();
 						break;
-		case TIME:		buildByTime();
+		case DATE:		buildByDate();
 						break;
 		case SIZE:		buildBySize();
 						break;
 		case TYPE:		buildByType();
 						break;
-		case TAG:		buildByTags();
+		case TAGS:		buildByTags();
 						break;
 		default:		break;
 	}
@@ -209,8 +240,8 @@ void Galaxy::buildHierarchy()
 	
 	if (root == NULL)
 	{
-		string n = name + " files";
-		sectors->push_back(new GSector(NULL,files,radius,0,360,n));
+		name += " [files]";
+		sectors->push_back(new GSector(NULL,files,radius,0,360,name));
 		return;
 	}
 	
@@ -238,7 +269,7 @@ void Galaxy::buildByName()
 	list<list<filenode*>*> file_lists;
 	size_t charindex = 0;
 	
-	// Sort the galaxies file list.
+	// Sort the galaxy's file list by name of the files.
 	list<filenode*>::iterator i = files->begin();
 	list<filenode*>::iterator j;
 	sorted_files.push_back(*i);
@@ -253,10 +284,11 @@ void Galaxy::buildByName()
 	}
 	// Done sorting the sectors.
 	
-	// Preliminary test.
+	// Preliminary test. Go through the sorted list, and see at what index do
+	// the file names start being different.
 	i = sorted_files.end();
 	filenode *b = (*(sorted_files.begin()));
-	for (charindex = 0; charindex < 10 && i == sorted_files.end(); charindex++)
+	for (charindex = 0; i == sorted_files.end(); charindex++)
 	{
 		for (i = sorted_files.begin(); i != sorted_files.end(); i++)
 			if (charindex < (*i)->name.size() && charindex < b->name.size())
@@ -267,7 +299,7 @@ void Galaxy::buildByName()
 	
 	// Begin splitting sorted list.
 	i = sorted_files.begin();
-	list<filenode*> *temp = new list<filenode*>;
+	list<filenode*>* temp = new list<filenode*>;
 	temp->push_back(*i);
 	
 	j = i;
@@ -288,10 +320,23 @@ void Galaxy::buildByName()
 	file_lists.push_back(temp);
 	// End splitting sorted list.
 	
-	
+	// Start making the sectors.
+	float arc_begin = 0;
+	float arc_width = 0;
+	 
+	cout << "creating sectors divided by name\n";
+	for (list<list<filenode*>*>::iterator i = file_lists.begin(); i != file_lists.end(); i++)
+	{
+		string name = (*((*i)->begin()))->name;
+		name = name.substr(0,charindex);
+		arc_begin += arc_width;
+		arc_width = 360.0*((float)(*i)->size()/(float)sorted_files.size());
+		sectors->push_back(new GSector(NULL,(*i),radius,arc_begin,arc_width,name));
+	}
+	// End making sectors.
 }
 
-void Galaxy::buildByTime()
+void Galaxy::buildByDate()
 {}
 
 void Galaxy::buildBySize()
@@ -434,7 +479,7 @@ bool Galaxy::isColliding(float x, float y)
 		if ((*i)->isColliding(angle_d, norm_mag))
 			selected = (*i);
 		
-	if (selected != NULL) cout << "colliding with sector " << selected->getName() << endl;
+//	if (selected != NULL) cout << "colliding with sector " << selected->getName() << endl;
 	
 	return collide_flag = true;
 }
@@ -542,9 +587,9 @@ void Galaxy::draw()
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
+	// Draw the texture-mapped galaxy.
 	glPushMatrix();
 		// Rotate the galaxy 
-		glTranslatef(0,0,-1);
 		glRotatef(rotZ,0,0,1);
 		glScalef((side-5)/2,(side-5)/2,1);
 		
@@ -558,6 +603,7 @@ void Galaxy::draw()
 		glEnd();
 		glBindTexture(GL_TEXTURE_2D, 0);
 	glPopMatrix();
+	// Done drawing the texture-mapped galaxy.
 	
 	// Turn off texture mode.
 	glDisable(GL_TEXTURE_2D);
@@ -568,6 +614,7 @@ void Galaxy::draw()
 	{
 		// Draw the sector division lines.
 		glPushMatrix();
+			glTranslatef(0,0,1);
 			glRotatef(rotZ,0,0,1);
 			glScalef((side-5)/2,(side-5)/2,1);
 		
@@ -587,21 +634,64 @@ void Galaxy::draw()
 				glEnd();		
 			}
 		glPopMatrix();
-	
+		// Done drawing sector division lines.
+		
 		// Draw the selection mask.
-		if (collide_flag)
-		{
+		if (collide_flag && selected != NULL)
+		{			
 			glPushMatrix();
-				glTranslatef(0,0,1);
+				glTranslatef(0,0,2);
 				glRotatef(rotZ,0,0,1);
 				glScalef((side)/2,(side)/2,1);
-				if (selected != NULL) selected->drawMask();
+				selected->drawMask();
 			glPopMatrix();
+			
+			// If there is more than one sector, draw a label.
+			if (sectors->size() > 1)
+			{
+				// Try to initialize the text label. If it already exists,
+				// this does nothing.
+				selected->initLabel();
+			
+				float angle = rotZ + selected->getArcBegin() + (selected->getArcWidth()/2);			
+				float x = ((side-5)/4) * cos(angle*M_PI/180);
+				float y = ((side-5)/4) * sin(angle*M_PI/180);
+			
+//				cout << angle << " " << x << " " << y << endl;
+			
+				selected->getLabel()->setPosition(x,y);
+		
+				glPushMatrix();
+					glTranslatef(0,0,3);
+					selected->drawLabel();
+				glPopMatrix();
+			}
 		}
+		// Done drawing selection mask.
 	}
 	
 	// User is in star selection mode.
 	if (Star::starSelectionMode || sectors->size() == 1)
+	{
+		glPushMatrix();
+			glTranslatef(p[2]/-2,p[3]/2,1);
+			glScalef(starSelectionLabel->getWidth(),starSelectionLabel->getHeight(),1);
+			glBegin(GL_QUADS);
+				glColor4d(1,1,1,1);
+				glVertex2d(0,0);
+				glVertex2d(0,-1);
+				glColor4d(1,1,1,0);
+				glVertex2d(2,-1);
+				glVertex2d(2,0);
+			glEnd();
+		glPopMatrix();
+			
+		glPushMatrix();
+			glTranslatef(0,0,2);
+			starSelectionLabel->setPosition(p[2]/-2,p[3]/2);
+			starSelectionLabel->draw();
+		glPopMatrix();
+			
 		// If the user is mousing over the galaxy...
 		if (collide_flag)
 			// If the user is mousing over a sector...
@@ -619,8 +709,11 @@ void Galaxy::draw()
 					// Galaxy is being scaled to window. The star's label's
 					// coordinates also need to be scaled, if they are to hover
 					// over their star.
-					float x = star->getPosX();
-					float y = star->getPosY();
+					float d = star->getDistance();
+					float a = star->getAngle() + rotZ;
+					
+					float x = d*cos(a*M_PI/180);
+					float y = d*sin(a*M_PI/180);
 					float w = star->getLabel()->getWidth() + 10;
 					float h = star->getLabel()->getHeight() + 8;
 					
@@ -643,6 +736,8 @@ void Galaxy::draw()
 					glPopMatrix();
 				}
 			}
+	}
+	// End star selection mode drawing.
 	
 	// Turn off blending.
 	glDisable(GL_BLEND);

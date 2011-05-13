@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		5 March 2011
-// Last Updated:		30 April 2011
+// Last Updated:		13 May 2011
 //
 // File name:			DirTree.cpp
 // Programmer:			Matthew Hydock
@@ -76,8 +76,28 @@ void DirTree::add(string p, string n)
 	
 //	cout << tempf->path << tempf->name << endl;
 	
+	// If there is a tags file with this file's name, import the tags
+//	string tag_file = p + "." + n + ".tags";
+//	string line = "";
+//	list<string> *tags = new list<string>;
+//	list<string> *temp_tags = NULL;
+	
+//	cout << "trying to open " << tag_file << endl;
+	
+//	ifstream tag_stream(const_cast<char*>(tag_file.c_str()));
+//	while (!tag_stream.eof())
+//	{
+//		getline(tag_stream,line);
+//		temp_tags = tokenizeL(line," \n");
+//		if (temp_tags != NULL)	append(tags,temp_tags);
+//	}
+//	tempf->tags = *tags;
+	// Done adding tags to the temporary filenode.
+		
+	
 	// Tokenize the given path, and store in an array.
-	vector<string> path_toks = tokenize(p.substr((root->name).size()),"/");
+	vector<string>* path_toks = tokenizeV(p.substr((root->name).size()),"/");
+	string dir_path = root->name;
 	
 	// Set the current node to the root of the directory tree, and start an
 	// iterator on the current node's directory list.
@@ -85,14 +105,15 @@ void DirTree::add(string p, string n)
 	list<dirnode*>::iterator d = currnode->dirs.begin();
 	
 	// While there are still more paths to navigate...
-	for (size_t i = 0; i < path_toks.size();)
-	{
+	for (size_t i = 0; path_toks != NULL && i < path_toks->size();)
+	{		
 		// Scan the directory list for the current directory.
-		for (;d != currnode->dirs.end() && strcmp(path_toks[i].c_str(),(*d)->name.c_str()) != 0 && !isLessThan(path_toks[i],(*d)->name);d++);
+		for (;d != currnode->dirs.end() && path_toks->at(i) != (*d)->name && !isLessThan(path_toks->at(i),(*d)->name);d++);
 		
 		// If current directory exists, go to it.
-		if (d != currnode->dirs.end() && strcmp(path_toks[i].c_str(),(*d)->name.c_str()) == 0)
+		if (d != currnode->dirs.end() && path_toks->at(i) == (*d)->name)
 		{
+			dir_path += path_toks->at(i) + "/";
 			currnode->all_files.push_back(tempf);			
 			currnode = *d;
 			d = currnode->dirs.begin();
@@ -102,7 +123,8 @@ void DirTree::add(string p, string n)
 		else
 		{
 			dirnode* tempd = new dirnode;
-			tempd->name = path_toks[i];
+			tempd->name = path_toks->at(i);
+			tempd->path = dir_path;
 			currnode->dirs.insert(d,tempd);
 			d--;
 		}
@@ -122,7 +144,7 @@ void DirTree::add(string p, string n)
 dirnode* DirTree::getDir(string p)
 // Try to obtain a directory given its name.
 {
-	vector<string> path_toks = tokenize(p.substr((root->name).size()),"/");
+	vector<string>* path_toks = tokenizeV(p.substr((root->name).size()),"/");
 	
 	// Set the current node to the root of the directory tree, and start an
 	// iterator on the current node's directory list.
@@ -130,13 +152,13 @@ dirnode* DirTree::getDir(string p)
 	list<dirnode*>::iterator d = currnode->dirs.begin();
 	
 	// While there are still more paths to navigate...
-	for (size_t i = 0; i < path_toks.size();)
+	for (size_t i = 0; i < path_toks->size();)
 	{
 		// Scan the directory list for the current directory.
-		for (;d != currnode->dirs.end() && strcmp(path_toks[i].c_str(),(*d)->name.c_str()) != 0 && !isLessThan(path_toks[i],(*d)->name);d++);
+		for (;d != currnode->dirs.end() && strcmp(path_toks->at(i).c_str(),(*d)->name.c_str()) != 0 && !isLessThan(path_toks->at(i),(*d)->name);d++);
 		
 		// If current directory exists, go to it.
-		if (d != currnode->dirs.end() && strcmp(path_toks[i].c_str(),(*d)->name.c_str()) == 0)
+		if (d != currnode->dirs.end() && strcmp(path_toks->at(i).c_str(),(*d)->name.c_str()) == 0)
 		{
 			currnode = *d;
 			d = currnode->dirs.begin();

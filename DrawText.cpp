@@ -19,6 +19,8 @@ DrawText::DrawText(string t,string f,int s,float x,float y,anchor_type a)
 	text		= t;
 	size		= s;
 
+	setColor(1,1,1,1);
+
 	anchor = a;
 
 	rendered_text = 0;
@@ -78,6 +80,19 @@ string DrawText::getText()
 {
 	return text;
 }
+
+void DrawText::setColor(float r, float g, float b, float a)
+{
+	color[0] = r;
+	color[1] = g;
+	color[2] = b;
+	color[3] = a;
+}
+
+float* DrawText::getColor()
+{
+	return color;
+}
 //==============================================================================
 
 
@@ -110,7 +125,7 @@ void DrawText::refreshTexture()
 	
 	// Open the font.
 	TTF_Font* font = TTF_OpenFont(font_path.c_str(),size);
-	SDL_Color fg_color = {255,255,255,255};
+	SDL_Color fg_color = {255*color[0],255*color[1],255*color[2],255*color[3]};
 	
 	// Make the initial text buffer.	
 	initial = TTF_RenderText_Blended(font, text.c_str(), fg_color);

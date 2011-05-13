@@ -35,6 +35,8 @@ class Drawable
 		float width;
 		float height;
 	
+		string name;
+	
 		anchor_type anchor;
 		
 		bool collide_flag;

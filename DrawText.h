@@ -20,13 +20,13 @@ class DrawText:public Drawable
 		string font_path;
 		string text;
 		int size;
-		
+		float color[4];
+
 		float aspect_ratio;
 		
 		GLuint rendered_text;
 		GLubyte* tex_data;
 
-		
 	public:
 		DrawText(string t, string f = "/usr/share/fonts/truetype/freefont/FreeSans.ttf", int size = 14, float x = 0, float y = 0, anchor_type a = CENTER);
 		~DrawText();
@@ -42,6 +42,9 @@ class DrawText:public Drawable
 		
 		void setText(string t);
 		string getText();
+		
+		void setColor(float r, float g, float b, float a);
+		float* getColor();
 		
 		bool isColliding(float x, float y) {return false;};
 		
