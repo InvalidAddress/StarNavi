@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		12 March 2011
-// Last Updated:		28 April 2011
+// Last Updated:		13 May 2011
 //
 // File name:			GSector.h
 // Programmer:			Matthew Hydock

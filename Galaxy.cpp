@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		20 February 2011
-// Last Updated:		3 May 2011
+// Last Updated:		14 May 2011
 //
 // File name:			Galaxy.h
 // Programmer:			Matthew Hydock
@@ -61,8 +61,8 @@ Galaxy::Galaxy(dirnode *r, list<filenode*> *f, cluster_type m, string n)
 	initLabel();
 	
 	starSelectionLabel = new DrawText(" Star Selection Mode");
-	starSelectionLabel->setAnchor(LEFT_UPPER);
-	starSelectionLabel->setColor(0,0,0,1);
+	starSelectionLabel->setAlignment(LEFT);
+	starSelectionLabel->setTextColor(0,0,0,1);
 	starSelectionLabel->refreshTexture();
 	
 	cout << "galaxy built\n";
@@ -356,7 +356,7 @@ void Galaxy::buildByTags()
 void Galaxy::adjustSectorWidths()
 // Dynamically resize the sectors' widths, in case some are too small. This
 // method will probably derp hard if there are a ton of sectors that are too
-// small. Until I fix that, just try not to have ~70 directories with only 1
+// small. Until I fix that, just try not to have ~90 directories with only 1
 // file in each of them.
 {	
 	list<GSector*> *temp = new list<GSector*>();
@@ -378,9 +378,9 @@ void Galaxy::adjustSectorWidths()
 	// Done sorting the sectors.
 		
 	// If the current sector is too small, grow it and shrink all larger ones.
-	for (i = temp->begin(); i != temp->end() && (*i)->getArcWidth() < ((*i)->calcMinArcWidth()+5); i++)
+	for (i = temp->begin(); i != temp->end() && (*i)->getArcWidth() < ((*i)->calcMinArcWidth()+4); i++)
 	{
-		float diff = ((*i)->calcMinArcWidth()+5)-(*i)->getArcWidth();
+		float diff = ((*i)->calcMinArcWidth()+4)-(*i)->getArcWidth();
 		(*i)->setArcWidth((*i)->getArcWidth()+diff);
 		
 		int remain = 0;
@@ -675,7 +675,7 @@ void Galaxy::draw()
 	{
 		glPushMatrix();
 			glTranslatef(p[2]/-2,p[3]/2,1);
-			glScalef(starSelectionLabel->getWidth(),starSelectionLabel->getHeight(),1);
+			glScalef(starSelectionLabel->getTextWidth(),starSelectionLabel->getTextHeight(),1);
 			glBegin(GL_QUADS);
 				glColor4d(1,1,1,1);
 				glVertex2d(0,0);
@@ -688,7 +688,7 @@ void Galaxy::draw()
 			
 		glPushMatrix();
 			glTranslatef(0,0,2);
-			starSelectionLabel->setPosition(p[2]/-2,p[3]/2);
+			starSelectionLabel->setPosition(p[2]/-2,p[3]/2-starSelectionLabel->getTextHeight()/2);
 			starSelectionLabel->draw();
 		glPopMatrix();
 			
@@ -714,8 +714,8 @@ void Galaxy::draw()
 					
 					float x = d*cos(a*M_PI/180);
 					float y = d*sin(a*M_PI/180);
-					float w = star->getLabel()->getWidth() + 10;
-					float h = star->getLabel()->getHeight() + 8;
+					float w = star->getLabel()->getWidth();
+					float h = star->getLabel()->getHeight();
 					
 					x *= ((side-5)/2)/radius;
 					y *= ((side-5)/2)/radius;

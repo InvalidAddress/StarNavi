@@ -33,7 +33,6 @@ class StatusBar:public Drawable
 		
 		void refreshState();
 		
-		bool isColliding(float x, float y) {return false;};
 		void draw();
 };
 #endif

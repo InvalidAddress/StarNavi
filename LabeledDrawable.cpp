@@ -20,27 +20,16 @@ DrawText* LabeledDrawable::getLabel()
 void LabeledDrawable::initLabel()
 {
 	if (label == NULL)
+	{
 		label = new DrawText(name);
+		label->setBackgroundColor(.2,.2,.2,.25);
+		label->setHorzPadding(10);
+		label->setVertPadding(8);
+	}
 }	
 
 void LabeledDrawable::drawLabel()
 // Draw the name of the star.
 {
-	glPushMatrix();
-		glTranslatef(label->getPosX(),label->getPosY(),0);
-		glScalef(label->getWidth()/2+5,label->getHeight()/2+4,1);
-		
-		glBegin(GL_QUADS);
-			glColor4f(.2,.2,.2,.25);
-			glVertex2d(-1,1);
-			glVertex2d(-1,-1);
-			glVertex2d(1,-1);
-			glVertex2d(1,1);
-		glEnd();
-	glPopMatrix();
-	
-	glPushMatrix();
-		glTranslatef(0,0,1);
-		label->draw();
-	glPopMatrix();
+	label->draw();
 }

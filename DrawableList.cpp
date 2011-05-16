@@ -1,38 +1,43 @@
 //==============================================================================
 // Date Created:		29 April 2011
-// Last Updated:		6 May 2011
+// Last Updated:		15 May 2011
 //
-// File name:			ButtonList.h
+// File name:			DrawableList.h
 // Programmer:			Matthew Hydock
 //
-// File description:	Class that contains and draws a list of	buttons. Manages
-//						the separation between them, and for checking mouse
-//						collisions.
+// File description:	Class that contains and draws a list of	drawables.
+//						Manages the separation between them, and for checking
+//						mouse collisions.
+//
+//						Was originally just for buttons, but has since been
+//						repurposed for all kinds of drawables.
 //==============================================================================
 
-#include "ButtonList.h"
+#include "DrawableList.h"
 
 
 //==============================================================================
 // Constructor/Deconstructor.
 //==============================================================================
-ButtonList::ButtonList(float x, float y, float w, float h, int o, float vp, float hp)
+DrawableList::DrawableList(float x, float y, float w, float h, int o, float vp, float hp)
 {
 	xPos = x;
 	yPos = y;
 	width = w;
 	height = h;
 	
+	anchor = CENTER;
+	
 	orientation = o;
 	vert_padding = vp;
 	horz_padding = hp;
 	
-	buttons = new list<Button*>;
+	drawables = new list<Drawable*>;
 }
 
-ButtonList::~ButtonList()
+DrawableList::~DrawableList()
 {
-	delete(buttons);
+	delete(drawables);
 }
 //==============================================================================
 
@@ -40,30 +45,30 @@ ButtonList::~ButtonList()
 //==============================================================================
 // Button management.
 //==============================================================================
-void ButtonList::addButton(Button* b)
+void DrawableList::addDrawable(Drawable* d)
 {
-	b->setWidth(width);
-	b->setPosition(0,0);
+	d->setWidth(width);
+	d->setPosition(0,0);
 	
-	buttons->push_back(b);
+	drawables->push_back(d);
 }
 	
-list<Button*>* ButtonList::getButtonsList()
+list<Drawable*>* DrawableList::getDrawablesList()
 {
-	return buttons;
+	return drawables;
 }
 
-Button* ButtonList::getButton(size_t i)
+Drawable* DrawableList::getDrawable(size_t i)
 {
-	if (i > buttons->size())
+	if (i > drawables->size())
 	{
-		cout << "button requested outside range\n";
+		cout << "drawable requested outside range\n";
 		return NULL;
 	}
 	
 	size_t j = 0;
-	list<Button*>::iterator k = buttons->begin();
-	for (;j < i && k != buttons->end(); k++)
+	list<Drawable*>::iterator k = drawables->begin();
+	for (;j < i && k != drawables->end(); k++)
 		j++;
 	
 	return (*k);
@@ -75,53 +80,53 @@ Button* ButtonList::getButton(size_t i)
 //==============================================================================
 // Setters and getters.
 //==============================================================================
-void ButtonList::setWidth(float w)
-// Sets the width of the list, and all of its buttons.
+void DrawableList::setWidth(float w)
+// Sets the width of the list, and all of its drawables.
 {
 	width = w;
 
 	if (orientation == VERTICAL)
-		for (list<Button*>::iterator i = buttons->begin(); i != buttons->end(); i++)
+		for (list<Drawable*>::iterator i = drawables->begin(); i != drawables->end(); i++)
 			(*i)->setWidth(w);
 }
 
-void ButtonList::setHeight(float h)
-// Sets the height of the list, and all of its buttons.
+void DrawableList::setHeight(float h)
+// Sets the height of the list, and all of its drawables.
 {
 	width = h;
 	
 	if (orientation == HORIZONTAL)
-		for (list<Button*>::iterator i = buttons->begin(); i != buttons->end(); i++)
+		for (list<Drawable*>::iterator i = drawables->begin(); i != drawables->end(); i++)
 			(*i)->setHeight(h);
 }
 
-void ButtonList::setOrientation(int o)
+void DrawableList::setOrientation(int o)
 {
 	orientation = o;
 }
 
-int ButtonList::getOrientation()
+int DrawableList::getOrientation()
 {
 	return orientation;
 }
 
 
-void ButtonList::setHorizPadding(float h)
+void DrawableList::setHorizPadding(float h)
 {
 	horz_padding = h;
 }
 
-void ButtonList::setVertPadding(float v)
+void DrawableList::setVertPadding(float v)
 {
 	vert_padding = v;
 }
 
-float ButtonList::getHorizPadding()
+float DrawableList::getHorizPadding()
 {
 	return horz_padding;
 }
 
-float ButtonList::getVertPadding()
+float DrawableList::getVertPadding()
 {
 	return vert_padding;
 }
@@ -131,27 +136,49 @@ float ButtonList::getVertPadding()
 //==============================================================================
 // Methods for user interaction.
 //==============================================================================
-void ButtonList::activate()
+void DrawableList::activate()
 {
-	for (list<Button*>::iterator i = buttons->begin(); i != buttons->end(); i++)
+//	cout << "button list activated\n";
+	
+	for (list<Drawable*>::iterator i = drawables->begin(); i != drawables->end(); i++)
 		if ((*i)->getCollideFlag())
 		{
+//			cout << "activating button...\n";
 			(*i)->activate();
 			break;
 		}
 }
 	
-bool ButtonList::isColliding(float x, float y)
+bool DrawableList::isColliding(float x, float y)
 {
-	list<Button*>::iterator i = buttons->begin();
-	float localX = x-(xPos + ((*i)->getWidth()/2));
-	float localY = y-(yPos - ((*i)->getHeight()/2));
+	list<Drawable*>::iterator i = drawables->begin();
+	float localX = x-xPos;
+	float localY = y-yPos;
+	
+	switch(anchor)
+	{
+		case CENTER			: localX -= (*i)->getWidth()/2;
+							  localY += (*i)->getHeight()/2;
+							  break;
+		case LEFT_UPPER		: localX -= 0;
+							  localY += (*i)->getHeight();
+							  break;
+		case RIGHT_UPPER	: localX -= (*i)->getWidth();
+							  localY += (*i)->getHeight();
+							  break;
+		case RIGHT_LOWER	: localX -= (*i)->getWidth();
+							  localY += 0;
+							  break;
+		case LEFT_LOWER		: localX -= 0;
+							  localY += 0;
+							  break;
+	}
 	
 //	cout << x << ", " << y << " | " << localX << ", " << localY << endl;
 	
 	collide_flag = false;
 	
-	for (; i != buttons->end(); i++)
+	for (; i != drawables->end(); i++)
 	{
 		collide_flag = collide_flag || (*i)->isColliding(localX,localY);
 		if (orientation == HORIZONTAL)
@@ -165,9 +192,9 @@ bool ButtonList::isColliding(float x, float y)
 //==============================================================================
 
 
-void ButtonList::draw()
+void DrawableList::draw()
 {
-	// Set the size of the buttonlist, based on the viewport.
+	// Set the size of the drawable list, based on the viewport.
 	int p[4];
 	glGetIntegerv(GL_VIEWPORT,p);
 	
@@ -175,11 +202,11 @@ void ButtonList::draw()
 	if (orientation == HORIZONTAL) setHeight(p[3]);
 
 	glPushMatrix();
-		list<Button*>::iterator i = buttons->begin();
+		list<Drawable*>::iterator i = drawables->begin();
 		float x = xPos + ((*i)->getWidth()/2);
 		float y = yPos - ((*i)->getHeight()/2);
 		
-		for (; i != buttons->end(); i++)
+		for (; i != drawables->end(); i++)
 		{			
 			glTranslatef(x,y,0);
 			(*i)->draw();

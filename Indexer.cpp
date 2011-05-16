@@ -1,12 +1,12 @@
 //==============================================================================
 // Date Created:		4 February 2011
-// Last Updated:		6 March 2011
+// Last Updated:		16 May 2011
 //
-// File name:			indexer.cpp
+// File name:			Indexer.cpp
 // Programmer:			Matthew Hydock
 //
-// File description:	Contains a C++ class to index a file system recursively
-//						from a given directory. Horrendously overcomplicated.
+// File description:	A class to index a file system recursively from a given
+//						directory. Most of the work is done in DirTree.cpp.
 //==============================================================================
 
 #include "Indexer.h"
@@ -23,8 +23,11 @@ void Indexer::build(string dir)
 	while (dr != NULL)
 	{
 		if (dr->d_type == DT_REG)
-		// If a file, add to file list
-			dir_tree->add(dir, dr->d_name);
+		{
+			if (dr->d_name[0] != '.' && strstr(dr->d_name, ".tags") == NULL)
+			// If a file, but not a tag file, add to file list
+				dir_tree->add(dir, dr->d_name);
+		}
 		else if (dr->d_type == DT_DIR && (strcmp(dr->d_name, "..") != 0 && strcmp(dr->d_name, ".") != 0))
 		// If a directory, but not ./ or ../, then immediately dive into it.
 			build(dir + dr->d_name + "/");

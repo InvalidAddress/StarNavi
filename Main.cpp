@@ -15,8 +15,9 @@
 #include <SDL/SDL_ttf.h>
 #include "Container.h"
 #include "StateManager.h"
-#include "ButtonList.h"
+#include "DrawableList.h"
 #include "StatusBar.h"
+#include "Button.h"
 
 #define START_W 800
 #define START_H 600
@@ -93,48 +94,48 @@ void buildGUI()
 // Buttons.
 //==============================================================================
 	// Create the button list, and associated functor.
-	ButtonList *bl = new ButtonList(0,0,140,0);
-	Functor<ButtonList> *f_bl = new Functor<ButtonList>(bl, &ButtonList::activate);
+	DrawableList *bl = new DrawableList(0,0,140,0);
+	Functor<DrawableList> *f_bl = new Functor<DrawableList>(bl, &DrawableList::activate);
 	
 	// Create the back button, and add to button list.
 	AbstractFunctor *f_back = new Functor<StateManager>(sm, &StateManager::backward);
 	Button *back = new Button("<--",f_back,0,0,140,30);
-	bl->addButton(back);
+	bl->addDrawable(back);
 
 	// Create the forward button, and add to button list.
 	AbstractFunctor *f_forward = new Functor<StateManager>(sm, &StateManager::forward);
 	Button *forward = new Button("-->",f_forward,0,0,140,30);
-	bl->addButton(forward);
+	bl->addDrawable(forward);
 
 	// Create the 'by directory' button, and add to button list.
 	AbstractFunctor *f_dir = new NullFunctor();
 	Button *dir = new Button("By Directory",f_dir,0,0,140,30);
-	bl->addButton(dir);
+	bl->addDrawable(dir);
 
 	// Create the 'by name' button, and add to button list.
 	AbstractFunctor *f_name = new NullFunctor();
 	Button *name = new Button("By Name",f_name,0,0,140,30);
-	bl->addButton(name);
+	bl->addDrawable(name);
 
 	// Create the 'by date' button, and add to button list.
 	AbstractFunctor *f_date = new NullFunctor();
 	Button *date = new Button("By Date",f_date,0,0,140,30);
-	bl->addButton(date);
+	bl->addDrawable(date);
 
 	// Create the 'by size' button, and add to button list.
 	AbstractFunctor *f_size = new NullFunctor();
 	Button *size = new Button("By Size",f_size,0,0,140,30);
-	bl->addButton(size);
+	bl->addDrawable(size);
 
 	// Create the 'by type' button, and add to button list.
 	AbstractFunctor *f_type = new NullFunctor();
 	Button *type = new Button("By Type",f_type,0,0,140,30);
-	bl->addButton(type);
+	bl->addDrawable(type);
 	
 	// Create the 'by tags' button, and add to button list.
 	AbstractFunctor *f_tags = new NullFunctor();
 	Button *tags = new Button("By Tags",f_tags,0,0,140,30);
-	bl->addButton(tags);
+	bl->addDrawable(tags);
 
 	// Create new container to hold button list.
 	Container *c2 = new Container(bl,f_bl,1,0,140,525,LEFT_UPPER);

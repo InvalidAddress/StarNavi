@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		15 February 2011
-// Last Updated:		3 May 2011
+// Last Updated:		13 May 2011
 //
 // File name:			Star.cpp
 // Programmer:			Matthew Hydock

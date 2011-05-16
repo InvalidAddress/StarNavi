@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		3 May 2011
-// Last Updated:		6 May 2011
+// Last Updated:		13 May 2011
 //
 // File name:			DrawText.h
 // Programmer:			Matthew Hydock
@@ -10,18 +10,24 @@
 
 #include "DrawText.h"
 
-DrawText::DrawText(string t,string f,int s,float x,float y,anchor_type a)
+DrawText::DrawText(string t,string f,int s,float x,float y,text_align a)
 {
 	xPos = x;
 	yPos = y;
 
 	font_path	= f;
+	font_size	= s;
+	
 	text		= t;
-	size		= s;
-
-	setColor(1,1,1,1);
-
-	anchor = a;
+	align		= a;
+	
+	setTextColor(1,1,1,1);
+	setBackgroundColor(0,0,0,0);
+	
+	horz_padding = 0;
+	vert_padding = 0;
+	
+	anchor = CENTER;
 
 	rendered_text = 0;
 
@@ -34,29 +40,73 @@ DrawText::~DrawText()
 }
 
 //==============================================================================
-// Setters and getters.
+// Basic setters and getters.
 //==============================================================================
-void DrawText::setWidth(float w)
+void DrawText::setTextWidth(float w)
 {
 	width = w;
 	height = w/aspect_ratio;
 }
 
-void DrawText::setHeight(float h)
+float DrawText::getTextWidth()
+{
+	return width;
+}
+
+void DrawText::setTextHeight(float h)
 {
 	height = h;
 	width = h*aspect_ratio;
 }
 
+float DrawText::getTextHeight()
+{
+	return height;
+}
 
+float DrawText::getWidth()
+{
+	return width+horz_padding;
+}
+
+float DrawText::getHeight()
+{
+	return height+vert_padding;
+}
+
+void DrawText::setHorzPadding(float h)
+{
+	horz_padding = h;
+}
+
+float DrawText::getHorzPadding()
+{
+	return horz_padding;
+}
+		
+void DrawText::setVertPadding(float v)
+{
+	vert_padding = v;
+}
+
+float DrawText::getVertPadding()
+{
+	return vert_padding;
+}
+//==============================================================================
+
+
+//==============================================================================
+// Font/text methods.
+//==============================================================================
 void DrawText::setFontSize(int s)
 {
-	size = s;
+	font_size = s;
 }
 
 int DrawText::getFontSize()
 {
-	return size;
+	return font_size;
 }
 
 
@@ -81,17 +131,55 @@ string DrawText::getText()
 	return text;
 }
 
-void DrawText::setColor(float r, float g, float b, float a)
+void DrawText::setAlignment(text_align a)
 {
-	color[0] = r;
-	color[1] = g;
-	color[2] = b;
-	color[3] = a;
+	align = a;
 }
 
-float* DrawText::getColor()
+text_align DrawText::getAlignment()
 {
-	return color;
+	return align;
+}
+//==============================================================================
+
+
+//==============================================================================
+// Color methods
+//==============================================================================
+void DrawText::setTextColor(float r, float g, float b, float a)
+{
+	text_color[0] = r;
+	text_color[1] = g;
+	text_color[2] = b;
+	text_color[3] = a;
+}
+
+void DrawText::setTextColor(float c[4])
+{
+	setTextColor(c[0],c[1],c[2],c[3]);
+}
+
+float* DrawText::getTextColor()
+{
+	return text_color;
+}
+
+void DrawText::setBackgroundColor(float r, float g, float b, float a)
+{
+	bg_color[0] = r;
+	bg_color[1] = g;
+	bg_color[2] = b;
+	bg_color[3] = a;
+}
+
+void DrawText::setBackgroundColor(float c[4])
+{
+	setBackgroundColor(c[0],c[1],c[2],c[3]);
+}
+
+float* DrawText::getBackgroundColor()
+{
+	return bg_color;
 }
 //==============================================================================
 
@@ -124,8 +212,8 @@ void DrawText::refreshTexture()
 	SDL_Surface* initial = NULL;
 	
 	// Open the font.
-	TTF_Font* font = TTF_OpenFont(font_path.c_str(),size);
-	SDL_Color fg_color = {255*color[0],255*color[1],255*color[2],255*color[3]};
+	TTF_Font* font = TTF_OpenFont(font_path.c_str(),font_size);
+	SDL_Color fg_color = {255*text_color[0],255*text_color[1],255*text_color[2],255*text_color[3]};
 	
 	// Make the initial text buffer.	
 	initial = TTF_RenderText_Blended(font, text.c_str(), fg_color);
@@ -152,25 +240,36 @@ void DrawText::refreshTexture()
 		
 void DrawText::draw()
 {
+	// Draw the solid background.
+	glPushMatrix();
+		glTranslatef(xPos,yPos,0);
+		glScalef((width+horz_padding)/2,(height+vert_padding)/2,1);
+		
+		glBegin(GL_QUADS);
+			glColor4fv(bg_color);
+			glVertex2d(-1,1);
+			glVertex2d(-1,-1);
+			glVertex2d(1,-1);
+			glVertex2d(1,1);
+		glEnd();
+	glPopMatrix();
+	// Done drawing background.
+
 	// Turn texture mode.
 	glEnable(GL_TEXTURE_2D);	
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	
 	glPushMatrix();
-		switch(anchor)
+		switch(align)
 		{
-			case CENTER			: break;
-			case LEFT_UPPER		: glTranslatef(width/2,-height/2,0);
+			case MIDDLE			: break;
+			case LEFT			: glTranslatef(width/2,0,0);
 								  break;
-			case RIGHT_UPPER	: glTranslatef(-width/2,-height/2,0);
-								  break;
-			case RIGHT_LOWER	: glTranslatef(-width/2,height/2,0);
-								  break;
-			case LEFT_LOWER		: glTranslatef(width/2,height/2,0);
+			case RIGHT			: glTranslatef(-width/2,0,0);
 								  break;
 		}
 		
-		glTranslatef(xPos,yPos,0);
+		glTranslatef(xPos,yPos,1);
 		glScalef(width/2, height/2,1);
 		
 		glBindTexture(GL_TEXTURE_2D, rendered_text);

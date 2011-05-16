@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		6 May 2011
-// Last Updated:		13 May 2011
+// Last Updated:		16 May 2011
 //
 // File name:			StatusBar.cpp
 // Programmer:			Matthew Hydock
@@ -13,6 +13,11 @@
 
 StatusBar::StatusBar(StateManager* sm)
 {
+	xPos = 0;
+	yPos = 0;
+	width = 0;
+	height = 0;
+	
 	state = sm;
 
 	curr = state->getCurrent();
@@ -21,7 +26,7 @@ StatusBar::StatusBar(StateManager* sm)
 	num_files = new DrawText("b");
 	
 	directory->setFontSize(12);
-
+	num_files->setAlignment(LEFT);
 	refreshState();
 }
 
@@ -85,7 +90,7 @@ void StatusBar::draw()
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
 	directory->setPosition(0,0);
-	num_files->setPosition(num_files->getWidth()/2+(float)p[2]/-2,0);
+	num_files->setPosition((float)p[2]/-2,0);
 	
 	directory->draw();
 	num_files->draw();

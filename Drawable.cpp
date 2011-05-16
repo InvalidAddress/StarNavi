@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		17 April 2011
-// Last Updated:		3 May 2011
+// Last Updated:		15 May 2011
 //
 // File name:			Drawable.cpp
 // Programmer:			Matthew Hydock
@@ -82,6 +82,33 @@ anchor_type Drawable::getAnchor()
 bool Drawable::getCollideFlag()
 // Return the flag that knows if the object is colliding or not.
 {
+	return collide_flag;
+}
+
+bool Drawable::isColliding(float x, float y)
+// Check to see if the given coordinate is inside the button.
+{
+	float w = width;
+	float h = height;
+	
+//	cout << name << endl;
+//	cout << xPos << " " << yPos << " " << w << " " << h << endl;
+//	cout << x << " " << y << endl;
+	
+	switch (anchor)
+	{
+		case CENTER			:	collide_flag = (x >= xPos-w/2) && (x <= xPos+w/2) && (y >= yPos-h/2) && (y <= yPos+h/2);
+								break;
+		case LEFT_UPPER		:	collide_flag = (x >= xPos) && (x <= xPos+w) && (y >= yPos-h) && (y <= yPos);
+								break;
+		case RIGHT_UPPER	:	collide_flag = (x >= xPos-w) && (x <= xPos) && (y >= yPos-h) && (y <= yPos);
+								break;
+		case RIGHT_LOWER	: 	collide_flag = (x >= xPos-w) && (x <= xPos) && (y >= yPos) && (y <= yPos+h);
+								break;
+		case LEFT_LOWER		:	collide_flag = (x >= xPos) && (x <= xPos+w) && (y >= yPos) && (y <= yPos+h);
+								break;
+	}
+		
 	return collide_flag;
 }
 

@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		23 April 2011
-// Last Updated:		3 May 2011
+// Last Updated:		16 May 2011
 //
 // File name:			Button.cpp
 // Programmer:			Matthew Hydock
@@ -14,7 +14,7 @@
 Button::Button(string l, AbstractFunctor* f, float x, float y, float w, float h, bool active)
 // Make a button with a label l, that performs action f when clicked.
 {
-	label = l;
+	name = l;
 	act = f;
 	
 	xPos = x;
@@ -22,8 +22,10 @@ Button::Button(string l, AbstractFunctor* f, float x, float y, float w, float h,
 	width = w;
 	height = h;
 	
+	anchor = CENTER;
+	
 	interactive = active;
-	text = new DrawText(label);
+	text = new DrawText(name);
 	
 	text->setPosition(xPos,yPos);
 }
@@ -55,24 +57,9 @@ void Button::setAction(AbstractFunctor* f)
 void Button::activate()
 // Perform the button's assigned action.
 {
+//	cout << "button activated\n";
 	act->Call();
 }
-
-
-bool Button::isColliding(float x, float y)
-// Check to see if the given coordinate is inside the button.
-{
-	float w = width/2;
-	float h = height/2;
-	
-	collide_flag = (x >= xPos-w) && (x <= xPos+w) && (y >= yPos-h) && (y <= yPos+h);
-
-//	if (collide_flag)
-//		cout << "colliding with button " << label << endl;
-		
-	return collide_flag;
-}	
-
 
 void Button::draw()
 // Draw a rectangle with a gradient, dark on the far left and right, white in
@@ -82,6 +69,7 @@ void Button::draw()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	
 
+	// Draw the slightly larger rectangle that will become the outline.
 	glPushMatrix();
 		glTranslatef(xPos,yPos,0);
 		glScalef(width/2,height/2,1);
@@ -94,7 +82,9 @@ void Button::draw()
 			glVertex2d(1,1);
 		glEnd();
 	glPopMatrix();
+	// Done drawing outline.
 	
+	// Draw the gradient that will be the button.
 	glPushMatrix();
 		glTranslatef(xPos,yPos,1);
 		glScalef(width/2-2,height/2-2,1);
@@ -115,16 +105,20 @@ void Button::draw()
 			glVertex2d(1,1);
 		glEnd();
 	glPopMatrix();
+	// Done drawing the button.
 
+	// Draw the text. This takes up two layers.
 	glPushMatrix();
 		glTranslatef(0,0,2);
 		text->draw();
 	glPopMatrix();
+	// Done drawing text.
 	
+	// If mousing over a button, draw a shadow.
 	if (collide_flag)
 	{
 		glPushMatrix();
-			glTranslatef(xPos,yPos,3);
+			glTranslatef(xPos,yPos,4);
 			glScalef(width/2,height/2,1);
 		
 			glBegin(GL_QUADS);

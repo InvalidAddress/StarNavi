@@ -21,8 +21,6 @@ class Button:public Drawable
 {
 	private:
 		bool interactive;
-		
-		string label;
 
 		AbstractFunctor* act;
 		
@@ -40,7 +38,6 @@ class Button:public Drawable
 		void setAction(AbstractFunctor* f);
 		void activate();
 		
-		bool isColliding(float x, float y);
 		void draw();
 };
 #endif

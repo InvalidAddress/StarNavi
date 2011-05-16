@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		5 March 2011
-// Last Updated:		13 May 2011
+// Last Updated:		14 May 2011
 //
 // File name:			DirTree.cpp
 // Programmer:			Matthew Hydock
@@ -75,25 +75,9 @@ void DirTree::add(string p, string n)
 	mrmime->obtainType(tempf);
 	
 //	cout << tempf->path << tempf->name << endl;
-	
-	// If there is a tags file with this file's name, import the tags
-//	string tag_file = p + "." + n + ".tags";
-//	string line = "";
-//	list<string> *tags = new list<string>;
-//	list<string> *temp_tags = NULL;
-	
-//	cout << "trying to open " << tag_file << endl;
-	
-//	ifstream tag_stream(const_cast<char*>(tag_file.c_str()));
-//	while (!tag_stream.eof())
-//	{
-//		getline(tag_stream,line);
-//		temp_tags = tokenizeL(line," \n");
-//		if (temp_tags != NULL)	append(tags,temp_tags);
-//	}
-//	tempf->tags = *tags;
-	// Done adding tags to the temporary filenode.
-		
+
+	// Set the temporary filenode's tags.
+	setTags(tempf);		
 	
 	// Tokenize the given path, and store in an array.
 	vector<string>* path_toks = tokenizeV(p.substr((root->name).size()),"/");
@@ -191,6 +175,41 @@ filenode* DirTree::getFile(string p, string n)
 		return NULL;
 	
 	return *f;
+}
+
+void DirTree::setTags(filenode* f)
+// Set the filenode's tags depending on the existance of a tag file.
+{
+	string tag_file = f->path + "." + f->name + ".tags";
+	struct stat tempstat;
+	
+	// If there is a tags file with this file's name, import the tags	
+	if (stat(tag_file.c_str(),&tempstat) == 0)
+	{
+//		cout << "tag file found (?)\n";
+		string line = "";
+		list<string> *tags = new list<string>;
+		list<string> *temp_tags = NULL;
+	
+//		cout << "trying to open " << tag_file << endl;
+
+		// Read in the tag file one line at a time until EOF.
+		ifstream tag_stream(const_cast<char*>(tag_file.c_str()));
+		while (!tag_stream.eof())
+		{
+			getline(tag_stream,line);
+			temp_tags = tokenizeL(line," \n");
+			if (temp_tags != NULL)	append(tags,temp_tags);
+		}
+		// Done reading in tags.
+		
+		// Store to filenode's tags list.
+		f->tags = *tags;
+		
+//		for (list<string>::iterator i = tags->begin(); i != tags->end(); i++)
+//			cout << *i << " ";
+//		cout << endl;
+	}
 }
 //==============================================================================
 

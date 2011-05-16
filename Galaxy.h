@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		20 February 2011
-// Last Updated:		28 April 2011
+// Last Updated:		13 May 2011
 //
 // File name:			Galaxy.h
 // Programmer:			Matthew Hydock
@@ -92,12 +92,12 @@ class Galaxy:public LabeledDrawable
 		
 		list<GSector*>* getSectors();
 		
+		bool isColliding(float x, float y);
+		GSector* getSelected();
+		
 		void initTexture();
 		void refreshTex();
 		void draw();
-		
-		bool isColliding(float x, float y);
-		GSector* getSelected();
 };
 
 #endif

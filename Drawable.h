@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		20 February 2011
-// Last Updated:		3 May 2011
+// Last Updated:		15 May 2011
 //
 // File name:			Drawable.h
 // Programmer:			Matthew Hydock
@@ -42,7 +42,8 @@ class Drawable
 		bool collide_flag;
 
 	public:
-		virtual bool isColliding(float x, float y) = 0;
+		virtual void activate() {};
+		virtual bool isColliding(float x, float y);
 		virtual void draw() = 0;
 		virtual ~Drawable() {};
 		
@@ -60,8 +61,8 @@ class Drawable
 		void setAnchor(anchor_type a);
 		anchor_type getAnchor();
 		
-		bool getCollideFlag();	
-		
+		bool getCollideFlag();
+
 		void printGlError();
 		//void printFramebufferError();
 };
