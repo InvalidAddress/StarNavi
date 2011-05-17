@@ -1,12 +1,12 @@
 SOURCES =	MimeIdentifier.cpp DirTree.cpp Indexer.cpp \
 			Drawable.cpp DrawableList.cpp DrawText.cpp LabeledDrawable.cpp \
-			Container.cpp Button.cpp \
+			Container.cpp Button.cpp ListItem.cpp TagsList.cpp \
 			Star.cpp GSector.cpp Galaxy.cpp StateManager.cpp StatusBar.cpp \
 			Main.cpp
 			
 OBJECTS = 	MimeIdentifier.o DirTree.o Indexer.o \
 			Drawable.o DrawableList.o DrawText.o LabeledDrawable.o \
-			Container.o Button.o \
+			Container.o Button.o ListItem.o TagsList.o \
 			Star.o GSector.o Galaxy.o StateManager.o StatusBar.o \
 			Main.o
 			

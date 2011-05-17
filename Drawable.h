@@ -47,21 +47,22 @@ class Drawable
 		virtual void draw() = 0;
 		virtual ~Drawable() {};
 		
-		void setPosition(float x, float y);
-		void setPosX(float x);
-		void setPosY(float y);
-		float getPosX();
-		float getPosY();
+		virtual void setPosition(float x, float y);
+		virtual void setPosX(float x);
+		virtual void setPosY(float y);
+		virtual float getPosX();
+		virtual float getPosY();
 		
-		void setWidth(float w);
-		void setHeight(float h);
-		float getWidth();
-		float getHeight();
+		virtual void setWidth(float w);
+		virtual void setHeight(float h);
+		virtual float getWidth();
+		virtual float getHeight();
 		
-		void setAnchor(anchor_type a);
-		anchor_type getAnchor();
+		virtual void shiftToAnchor();
+		virtual void setAnchor(anchor_type a);
+		virtual anchor_type getAnchor();
 		
-		bool getCollideFlag();
+		virtual bool getCollideFlag();
 
 		void printGlError();
 		//void printFramebufferError();

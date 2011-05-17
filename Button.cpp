@@ -69,67 +69,71 @@ void Button::draw()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	
 
-	// Draw the slightly larger rectangle that will become the outline.
 	glPushMatrix();
+		shiftToAnchor();
 		glTranslatef(xPos,yPos,0);
-		glScalef(width/2,height/2,1);
 		
-		glBegin(GL_QUADS);
-			glColor4f(.1,.1,.1,1);
-			glVertex2d(-1,1);
-			glVertex2d(-1,-1);
-			glVertex2d(1,-1);
-			glVertex2d(1,1);
-		glEnd();
-	glPopMatrix();
-	// Done drawing outline.
-	
-	// Draw the gradient that will be the button.
-	glPushMatrix();
-		glTranslatef(xPos,yPos,1);
-		glScalef(width/2-2,height/2-2,1);
-
-		glBegin(GL_QUADS);
-			glColor4f(.15,.15,.15,0);
-			glVertex2d(-1,1);
-			glVertex2d(-1,-1);
-			glColor4f(.25,.25,.25,1);
-			glVertex2d(0,-1);
-			glVertex2d(0,1);
-
-			glColor4f(.25,.25,.25,1);
-			glVertex2d(0,1);
-			glVertex2d(0,-1);
-			glColor4f(.15,.15,.15,0);
-			glVertex2d(1,-1);
-			glVertex2d(1,1);
-		glEnd();
-	glPopMatrix();
-	// Done drawing the button.
-
-	// Draw the text. This takes up two layers.
-	glPushMatrix();
-		glTranslatef(0,0,2);
-		text->draw();
-	glPopMatrix();
-	// Done drawing text.
-	
-	// If mousing over a button, draw a shadow.
-	if (collide_flag)
-	{
+		// Draw the slightly larger rectangle that will become the outline.
 		glPushMatrix();
-			glTranslatef(xPos,yPos,4);
 			glScalef(width/2,height/2,1);
 		
 			glBegin(GL_QUADS);
-				glColor4f(0,0,0,.4);
+				glColor4f(.1,.1,.1,1);
 				glVertex2d(-1,1);
 				glVertex2d(-1,-1);
 				glVertex2d(1,-1);
 				glVertex2d(1,1);
 			glEnd();
 		glPopMatrix();
-	}
+		// Done drawing outline.
+	
+		// Draw the gradient that will be the button.
+		glPushMatrix();
+			glTranslatef(0,0,1);
+			glScalef(width/2-2,height/2-2,1);
+
+			glBegin(GL_QUADS);
+				glColor4f(.15,.15,.15,0);
+				glVertex2d(-1,1);
+				glVertex2d(-1,-1);
+				glColor4f(.25,.25,.25,1);
+				glVertex2d(0,-1);
+				glVertex2d(0,1);
+
+				glColor4f(.25,.25,.25,1);
+				glVertex2d(0,1);
+				glVertex2d(0,-1);
+				glColor4f(.15,.15,.15,0);
+				glVertex2d(1,-1);
+				glVertex2d(1,1);
+			glEnd();
+		glPopMatrix();
+		// Done drawing the button.
+
+		// Draw the text. This takes up two layers.
+		glPushMatrix();
+			glTranslatef(0,0,2);
+			text->draw();
+		glPopMatrix();
+		// Done drawing text.
+	
+		// If mousing over a button, draw a shadow.
+		if (collide_flag)
+		{
+			glPushMatrix();
+				glTranslatef(0,0,4);
+				glScalef(width/2,height/2,1);
+		
+				glBegin(GL_QUADS);
+					glColor4f(0,0,0,.4);
+					glVertex2d(-1,1);
+					glVertex2d(-1,-1);
+					glVertex2d(1,-1);
+					glVertex2d(1,1);
+				glEnd();
+			glPopMatrix();
+		}
+	glPopMatrix();
 	
 	// Turn off blending.
 	glDisable(GL_BLEND);

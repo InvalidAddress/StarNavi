@@ -16,6 +16,7 @@
 #include "Container.h"
 #include "StateManager.h"
 #include "DrawableList.h"
+#include "TagsList.h"
 #include "StatusBar.h"
 #include "Button.h"
 
@@ -93,76 +94,71 @@ void buildGUI()
 //==============================================================================
 // Buttons.
 //==============================================================================
-	// Create the button list, and associated functor.
+	// Create the drawables list, and associated functor.
 	DrawableList *bl = new DrawableList(0,0,140,0);
 	Functor<DrawableList> *f_bl = new Functor<DrawableList>(bl, &DrawableList::activate);
 	
-	// Create the back button, and add to button list.
+	// Create the back button, and add to the drawables list.
 	AbstractFunctor *f_back = new Functor<StateManager>(sm, &StateManager::backward);
 	Button *back = new Button("<--",f_back,0,0,140,30);
 	bl->addDrawable(back);
 
-	// Create the forward button, and add to button list.
+	// Create the forward button, and add to the drawables list.
 	AbstractFunctor *f_forward = new Functor<StateManager>(sm, &StateManager::forward);
 	Button *forward = new Button("-->",f_forward,0,0,140,30);
 	bl->addDrawable(forward);
 
-	// Create the 'by directory' button, and add to button list.
+	// Create the 'by directory' button, and add to the drawables list.
 	AbstractFunctor *f_dir = new NullFunctor();
 	Button *dir = new Button("By Directory",f_dir,0,0,140,30);
 	bl->addDrawable(dir);
 
-	// Create the 'by name' button, and add to button list.
+	// Create the 'by name' button, and add to the drawables list.
 	AbstractFunctor *f_name = new NullFunctor();
 	Button *name = new Button("By Name",f_name,0,0,140,30);
 	bl->addDrawable(name);
 
-	// Create the 'by date' button, and add to button list.
+	// Create the 'by date' button, and add to the drawables list.
 	AbstractFunctor *f_date = new NullFunctor();
 	Button *date = new Button("By Date",f_date,0,0,140,30);
 	bl->addDrawable(date);
 
-	// Create the 'by size' button, and add to button list.
+	// Create the 'by size' button, and add to the drawables list.
 	AbstractFunctor *f_size = new NullFunctor();
 	Button *size = new Button("By Size",f_size,0,0,140,30);
 	bl->addDrawable(size);
 
-	// Create the 'by type' button, and add to button list.
+	// Create the 'by type' button, and add to the drawables list.
 	AbstractFunctor *f_type = new NullFunctor();
 	Button *type = new Button("By Type",f_type,0,0,140,30);
 	bl->addDrawable(type);
 	
-	// Create the 'by tags' button, and add to button list.
+	// Create the 'by tags' button, and add to the drawables list.
 	AbstractFunctor *f_tags = new NullFunctor();
 	Button *tags = new Button("By Tags",f_tags,0,0,140,30);
 	bl->addDrawable(tags);
 
-	// Create new container to hold button list.
-	Container *c2 = new Container(bl,f_bl,1,0,140,525,LEFT_UPPER);
+	// Create the tags list and add to the drawables list.
+	TagsList *tag_l = new TagsList(sm,0,0,140,0);
+	bl->addDrawable(tag_l);
 
-	// Add button list to list of containers.
+	// Create new container to hold the drawables list.
+	Container *c2 = new Container(bl,f_bl,1,0,139,525,LEFT_UPPER);
 	containers.push_back(c2);
 //==============================================================================
 	
 	// Create new container to hold file/sector info.
 	Container *c3 = new Container(NULL,new NullFunctor(),660,0,140,525,LEFT_UPPER);
-
-	// Add file/sector info to container list.
 	containers.push_back(c3);	
 	
 	// Create new container to hold path buttons and location bar.
 	Container *c4 = new Container(NULL,new NullFunctor(),1,535,799,64);
-	
-	// Add location bar and path buttons to container list.
 	containers.push_back(c4);
 	
-	// Make a status bar, to show the current galaxy's name.
+	// Make a status bar, to show the current galaxy's name and number of files,
+	// and add it to the list of containers
 	StatusBar *sb = new StatusBar(sm);
-	
-	// Create new container to hold current galaxy's name
 	Container *c5 = new Container(sb,new NullFunctor(),150,0,500,15);
-	
-	// Add galaxy name to container list.
 	containers.push_back(c5);
 }
 //==============================================================================

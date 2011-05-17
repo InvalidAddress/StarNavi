@@ -23,7 +23,7 @@
 
 class DrawableList:public Drawable
 {
-	private:			
+	protected:			
 		int orientation;
 		float vert_padding;
 		float horz_padding;
@@ -31,6 +31,7 @@ class DrawableList:public Drawable
 		list<Drawable*>* drawables;
 	
 	public:
+		DrawableList() {};
 		DrawableList(float x, float y, float w, float h, int o = VERTICAL, float vp = 5, float hp = 5);
 		~DrawableList();
 		

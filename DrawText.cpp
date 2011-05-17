@@ -18,6 +18,7 @@ DrawText::DrawText(string t,string f,int s,float x,float y,text_align a)
 	font_path	= f;
 	font_size	= s;
 	
+	name		= t;
 	text		= t;
 	align		= a;
 	
@@ -123,6 +124,7 @@ string DrawText::getFont()
 
 void DrawText::setText(string t)
 {
+	name = t;
 	text = t;
 }
 

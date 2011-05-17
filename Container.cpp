@@ -138,18 +138,8 @@ void Container::draw()
 	glViewport(xPos,yPos,width,height);
 	
 	glPushMatrix();
-		switch(anchor)
-		{
-			case CENTER			: break;
-			case LEFT_UPPER		: glTranslatef(width/2,-height/2,0);
-								  break;
-			case RIGHT_UPPER	: glTranslatef(-width/2,-height/2,0);
-								  break;
-			case RIGHT_LOWER	: glTranslatef(-width/2,height/2,0);
-								  break;
-			case LEFT_LOWER		: glTranslatef(width/2,height/2,0);
-								  break;
-		}
+		shiftToAnchor();
+		
 		glScalef(width,height,1);
 		
 		glBegin(GL_LINES);		

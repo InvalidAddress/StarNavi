@@ -26,12 +26,18 @@ DrawableList::DrawableList(float x, float y, float w, float h, int o, float vp, 
 	width = w;
 	height = h;
 	
-	anchor = CENTER;
+	anchor = LEFT_UPPER;
 	
 	orientation = o;
 	vert_padding = vp;
 	horz_padding = hp;
 	
+	if (orientation == HORIZONTAL)
+		width = 0;
+	if (orientation == VERTICAL)
+		height = 0;
+	
+	drawables = NULL;
 	drawables = new list<Drawable*>;
 }
 
@@ -47,10 +53,22 @@ DrawableList::~DrawableList()
 //==============================================================================
 void DrawableList::addDrawable(Drawable* d)
 {
-	d->setWidth(width);
-	d->setPosition(0,0);
+	if (orientation == HORIZONTAL)
+	{
+		d->setPosition(width,0);
+		d->setHeight(height);
+		width += d->getWidth()+horz_padding;
+	}
+	if (orientation == VERTICAL)
+	{
+		d->setPosition(0,-height);
+		d->setWidth(width);
+		height += d->getHeight()+vert_padding;
+	}
 	
+	d->setAnchor(anchor);
 	drawables->push_back(d);
+//	cout << d->getPosX() << " " << d->getPosY() << " " << height << endl;
 }
 	
 list<Drawable*>* DrawableList::getDrawablesList()
@@ -151,40 +169,19 @@ void DrawableList::activate()
 	
 bool DrawableList::isColliding(float x, float y)
 {
-	list<Drawable*>::iterator i = drawables->begin();
 	float localX = x-xPos;
 	float localY = y-yPos;
-	
-	switch(anchor)
-	{
-		case CENTER			: localX -= (*i)->getWidth()/2;
-							  localY += (*i)->getHeight()/2;
-							  break;
-		case LEFT_UPPER		: localX -= 0;
-							  localY += (*i)->getHeight();
-							  break;
-		case RIGHT_UPPER	: localX -= (*i)->getWidth();
-							  localY += (*i)->getHeight();
-							  break;
-		case RIGHT_LOWER	: localX -= (*i)->getWidth();
-							  localY += 0;
-							  break;
-		case LEFT_LOWER		: localX -= 0;
-							  localY += 0;
-							  break;
-	}
 	
 //	cout << x << ", " << y << " | " << localX << ", " << localY << endl;
 	
 	collide_flag = false;
+	bool temp;
 	
-	for (; i != drawables->end(); i++)
+	for (list<Drawable*>::iterator i = drawables->begin(); i != drawables->end(); i++)
 	{
-		collide_flag = collide_flag || (*i)->isColliding(localX,localY);
-		if (orientation == HORIZONTAL)
-			localX -= ((*i)->getWidth() + horz_padding);
-		if (orientation == VERTICAL)
-			localY += ((*i)->getHeight() + vert_padding);
+		temp = false;
+		temp = (*i)->isColliding(localX,localY);
+		collide_flag = collide_flag || temp;
 	}
 	
 	return collide_flag;
@@ -202,22 +199,10 @@ void DrawableList::draw()
 	if (orientation == HORIZONTAL) setHeight(p[3]);
 
 	glPushMatrix();
-		list<Drawable*>::iterator i = drawables->begin();
-		float x = xPos + ((*i)->getWidth()/2);
-		float y = yPos - ((*i)->getHeight()/2);
+		//shiftToAnchor();		
+		glTranslatef(xPos,yPos,0);
 		
-		for (; i != drawables->end(); i++)
-		{			
-			glTranslatef(x,y,0);
+		for (list<Drawable*>::iterator i = drawables->begin(); i != drawables->end(); i++)
 			(*i)->draw();
-			
-			x = 0;
-			y = 0;
-			
-			if (orientation == HORIZONTAL)
-				x = ((*i)->getWidth()+horz_padding);
-			if (orientation == VERTICAL)
-				y = -((*i)->getHeight()+vert_padding);
-		}
 	glPopMatrix();
 }

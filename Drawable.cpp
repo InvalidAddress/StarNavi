@@ -67,6 +67,22 @@ float Drawable::getHeight()
 	return height;
 }
 
+void Drawable::shiftToAnchor()
+{
+	switch(anchor)
+	{
+		case CENTER			: break;
+		case LEFT_UPPER		: glTranslatef(width/2,-height/2,0);
+							  break;
+		case RIGHT_UPPER	: glTranslatef(-width/2,-height/2,0);
+							  break;
+		case RIGHT_LOWER	: glTranslatef(-width/2,height/2,0);
+							  break;
+		case LEFT_LOWER		: glTranslatef(width/2,height/2,0);
+							  break;
+	}
+}
+
 void Drawable::setAnchor(anchor_type a)
 // Set the origin of the container's coordinate world.
 {
