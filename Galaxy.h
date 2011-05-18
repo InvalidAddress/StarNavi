@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		20 February 2011
-// Last Updated:		13 May 2011
+// Last Updated:		17 May 2011
 //
 // File name:			Galaxy.h
 // Programmer:			Matthew Hydock
@@ -17,7 +17,7 @@
 #ifndef GALAXY
 #define GALAXY
 
-enum cluster_type{DIRECTORY,NAME,DATE,SIZE,TYPE,TAGS};
+enum cluster_type{DIRECTORY,NAME,DATE,SIZE,TYPE,TAGS,NONE};
 
 class Galaxy:public LabeledDrawable
 {
@@ -67,7 +67,7 @@ class Galaxy:public LabeledDrawable
 		void clearSectors();
 		
 	public:
-		Galaxy(dirnode* r, list<filenode*>* f = NULL, cluster_type m = DIRECTORY, string n = "");
+		Galaxy(dirnode* r, list<filenode*>* f = NULL, cluster_type m = DIRECTORY, string n = "", list<string>* t = NULL);
 		~Galaxy();
 		
 		void setName(string n);
@@ -82,7 +82,8 @@ class Galaxy:public LabeledDrawable
 		void setClusterMode(cluster_type m);
 		cluster_type getClusterMode();
 		
-		void buildTags();
+		void setTags(list<string>* t);
+		void rebuildTags();
 		list<string>* getTags();
 		
 		void setDirectory(dirnode* r);

@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		6 April 2011
-// Last Updated:		17 April 2011
+// Last Updated:		17 May 2011
 //
 // File name:			StateManager.h
 // Programmer:			Matthew Hydock
@@ -24,7 +24,7 @@ class StateManager:public Drawable
 		list<Galaxy*> galaxies;
 		list<Galaxy*>::iterator curr;
 		
-		list<string> tags;
+		list<string>* tags;
 	
 	public:
 		StateManager(string dir);
@@ -35,6 +35,8 @@ class StateManager:public Drawable
 		void forward();
 		void backward();
 		void navigate();
+		
+		void setActiveTags(list<string>* t);
 		
 		void setDirectoryMode();
 		void setNameMode();

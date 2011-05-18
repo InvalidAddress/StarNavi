@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		13 May 2011
-// Last Updated:		13 May 2011
+// Last Updated:		17 May 2011
 //
 // File name:			TagsList.cpp
 // Programmer:			Matthew Hydock
@@ -94,7 +94,19 @@ void TagsList::clearTags()
 //==============================================================================
 void TagsList::updateStateManager()
 {
-
+	list<string>* temp = getSelectedTags();
+	
+	if (temp->size() > 0)
+	{
+		for (list<string>::iterator i = temp->begin(); i != temp->end(); i++)
+			cout << (*i) << " ";
+		cout << endl;
+		state->setActiveTags(temp);
+		state->setTagsMode();
+		curr = state->getCurrent();
+		
+		rebuildTags();
+	}
 }
 //==============================================================================
 

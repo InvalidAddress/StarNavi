@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		13 May 2011
-// Last Updated:		13 May 2011
+// Last Updated:		17 May 2011
 //
 // File name:			TagsList.h
 // Programmer:			Matthew Hydock

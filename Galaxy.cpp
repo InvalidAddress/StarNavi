@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		20 February 2011
-// Last Updated:		14 May 2011
+// Last Updated:		17 May 2011
 //
 // File name:			Galaxy.h
 // Programmer:			Matthew Hydock
@@ -16,7 +16,7 @@
 //==============================================================================
 // Constructors/Deconstructors
 //==============================================================================
-Galaxy::Galaxy(dirnode *r, list<filenode*> *f, cluster_type m, string n)
+Galaxy::Galaxy(dirnode *r, list<filenode*> *f, cluster_type m, string n, list<string>* t)
 {
 	cout << "making a galaxy...\n";
 	
@@ -45,8 +45,10 @@ Galaxy::Galaxy(dirnode *r, list<filenode*> *f, cluster_type m, string n)
 	setRotationSpeed(0.02);
 	rotZ = 0;
 	
-	tags = NULL;
-	buildTags();
+	tags = t;
+	if (tags == NULL)
+		rebuildTags();
+	
 	cluster_mode = m;
 	
 	sectors = NULL;
@@ -124,7 +126,14 @@ string Galaxy::getName()
 	return name;
 }
 
-void Galaxy::buildTags()
+void Galaxy::setTags(list<string>* t)
+// In the event an outside object already made a set of tags, might as well just
+// use those.
+{
+	tags = t;
+}
+
+void Galaxy::rebuildTags()
 // Build the galaxy's tag list.
 {
 	cout << "building tags" << endl;
@@ -210,6 +219,7 @@ void Galaxy::buildSectors()
 	
 	switch (cluster_mode)
 	{
+		case NONE:
 		case DIRECTORY:	buildHierarchy();
 						break;
 		case NAME:		buildByName();
@@ -346,7 +356,50 @@ void Galaxy::buildByType()
 {}
 
 void Galaxy::buildByTags()
-{}
+// Build sectors by separating files according to what tags they have.
+{
+	list<list<filenode*>*>* temp_list = new list<list<filenode*>*>;
+	int total_size = 0;
+	
+	// Make a file list for each tag, containing files that have those tags.
+	for (list<string>::iterator i = tags->begin(); i != tags->end(); i++)
+	{
+		cout << "collecting files with tag " << *i << endl;
+		// Make a temporary list for filenodes.
+		list<filenode*>* temp_files = new list<filenode*>;
+		
+		// Fill it with files that have the current tag.
+		for (list<filenode*>::iterator j = files->begin(); j != files->end(); j++)
+			if (contains(&((*j)->tags),*i))
+			{
+				cout << "found a file!\n";
+				temp_files->push_back(*j);
+			}
+				
+		// Keep track of the total size, then add it to the list of lists.
+		total_size += temp_files->size();
+		temp_list->push_back(temp_files);
+		
+		cout << total_size << " " << temp_files->size() << endl;
+	}
+	
+	float arc_begin = 0;
+	float arc_width = 0;
+	
+	// Make sectors for the tags.
+	cout << "creating sectors for tags\n";
+	list<string>::iterator n = tags->begin();
+	for (list<list<filenode*>*>::iterator i = temp_list->begin(); i != temp_list->end(); i++)
+	{
+		arc_begin += arc_width;
+		arc_width = 360.0*((float)(*i)->size()/total_size);
+		sectors->push_back(new GSector(NULL,*i,radius,arc_begin,arc_width,*n));
+		n++;
+	}
+
+	if (sectors->size() <= 1)
+		rebuildTags();
+}
 //==============================================================================
 
 
@@ -610,7 +663,7 @@ void Galaxy::draw()
 	
 	// If the user is not in star selection mode, draw the sector lines and the
 	// sector selection mask.
-	if (!Star::starSelectionMode)
+	if (!Star::starSelectionMode && sectors->size() > 1)
 	{
 		// Draw the sector division lines.
 		glPushMatrix();
@@ -618,21 +671,18 @@ void Galaxy::draw()
 			glRotatef(rotZ,0,0,1);
 			glScalef((side-5)/2,(side-5)/2,1);
 		
-			if (sectors->size() > 1)
-			{
-				glBegin(GL_LINES);
-					for (list<GSector*>::iterator i = sectors->begin(); i != sectors->end(); i++)
-					{
-						float arc_begin = (*i)->getArcBegin();
-						float arc_begin_r = arc_begin * M_PI/180;
+			glBegin(GL_LINES);
+				for (list<GSector*>::iterator i = sectors->begin(); i != sectors->end(); i++)
+				{
+					float arc_begin = (*i)->getArcBegin();
+					float arc_begin_r = arc_begin * M_PI/180;
 
-						glColor4d(1,1,1,1);
-						glVertex2d(0.0,0.0);
-						glColor4d(0,0,0,0);
-						glVertex2d(cos(arc_begin_r),sin(arc_begin_r));
-					}
-				glEnd();		
-			}
+					glColor4d(1,1,1,1);
+					glVertex2d(0.0,0.0);
+					glColor4d(0,0,0,0);
+					glVertex2d(cos(arc_begin_r),sin(arc_begin_r));
+				}
+			glEnd();		
 		glPopMatrix();
 		// Done drawing sector division lines.
 		
@@ -646,33 +696,30 @@ void Galaxy::draw()
 				selected->drawMask();
 			glPopMatrix();
 			
-			// If there is more than one sector, draw a label.
-			if (sectors->size() > 1)
-			{
-				// Try to initialize the text label. If it already exists,
-				// this does nothing.
-				selected->initLabel();
+			// Try to initialize the text label. If it already exists, this does
+			// nothing.
+			selected->initLabel();
 			
-				float angle = rotZ + selected->getArcBegin() + (selected->getArcWidth()/2);			
-				float x = ((side-5)/4) * cos(angle*M_PI/180);
-				float y = ((side-5)/4) * sin(angle*M_PI/180);
+			float angle = rotZ + selected->getArcBegin() + (selected->getArcWidth()/2);			
+			float x = ((side-5)/4) * cos(angle*M_PI/180);
+			float y = ((side-5)/4) * sin(angle*M_PI/180);
 			
-//				cout << angle << " " << x << " " << y << endl;
+//			cout << angle << " " << x << " " << y << endl;
 			
-				selected->getLabel()->setPosition(x,y);
+			selected->getLabel()->setPosition(x,y);
 		
-				glPushMatrix();
-					glTranslatef(0,0,3);
-					selected->drawLabel();
-				glPopMatrix();
-			}
+			glPushMatrix();
+				glTranslatef(0,0,3);
+				selected->drawLabel();
+			glPopMatrix();
 		}
 		// Done drawing selection mask.
 	}
 	
 	// User is in star selection mode.
-	if (Star::starSelectionMode || sectors->size() == 1)
+	if (Star::starSelectionMode || sectors->size() <= 1)
 	{
+		// Draw the Star Selection Mode banner.
 		glPushMatrix();
 			glTranslatef(p[2]/-2,p[3]/2,1);
 			glScalef(starSelectionLabel->getTextWidth(),starSelectionLabel->getTextHeight(),1);
@@ -691,7 +738,8 @@ void Galaxy::draw()
 			starSelectionLabel->setPosition(p[2]/-2,p[3]/2-starSelectionLabel->getTextHeight()/2);
 			starSelectionLabel->draw();
 		glPopMatrix();
-			
+		// Done drawing the Star Selection Mode banner.
+
 		// If the user is mousing over the galaxy...
 		if (collide_flag)
 			// If the user is mousing over a sector...

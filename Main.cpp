@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		14 February 2011
-// Last Updated:		3 May 2011
+// Last Updated:		17 May 2011
 //
 // File name:			MainClass.cpp
 // Programmer:			Matthew Hydock
@@ -96,7 +96,7 @@ void buildGUI()
 //==============================================================================
 	// Create the drawables list, and associated functor.
 	DrawableList *bl = new DrawableList(0,0,140,0);
-	Functor<DrawableList> *f_bl = new Functor<DrawableList>(bl, &DrawableList::activate);
+	AbstractFunctor *f_bl = new Functor<DrawableList>(bl, &DrawableList::activate);
 	
 	// Create the back button, and add to the drawables list.
 	AbstractFunctor *f_back = new Functor<StateManager>(sm, &StateManager::backward);
@@ -133,13 +133,15 @@ void buildGUI()
 	Button *type = new Button("By Type",f_type,0,0,140,30);
 	bl->addDrawable(type);
 	
+	// Create the tags list before the button, to properly create the functor.
+	TagsList *tag_l = new TagsList(sm,0,0,140,0);
+	
 	// Create the 'by tags' button, and add to the drawables list.
-	AbstractFunctor *f_tags = new NullFunctor();
+	AbstractFunctor *f_tags = new Functor<TagsList>(tag_l, &TagsList::updateStateManager);
 	Button *tags = new Button("By Tags",f_tags,0,0,140,30);
 	bl->addDrawable(tags);
 
-	// Create the tags list and add to the drawables list.
-	TagsList *tag_l = new TagsList(sm,0,0,140,0);
+	// Add the tags list to the drawables list.
 	bl->addDrawable(tag_l);
 
 	// Create new container to hold the drawables list.

@@ -114,7 +114,7 @@ extern inline vector<string>* tokenizeV(string s, string del)
 	return v;
 }
 
-template<typename T> extern inline void append(list<T> *l1, list<T> *l2)
+template<typename T> extern inline void append(list<T>* l1, list<T>* l2)
 // Since the list library doesn't have a function to append a list onto another
 // list...
 {
@@ -123,7 +123,7 @@ template<typename T> extern inline void append(list<T> *l1, list<T> *l2)
 		l1->push_back(*i2);
 }
 
-template<typename T> extern inline bool contains(list<T> *l, T i)
+template<typename T> extern inline bool contains(list<T>* l, T i)
 // Checks to see if the given list contains the requested item.
 {
 	return (find(l->begin(),l->end(),i) != l->end());

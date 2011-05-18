@@ -1,6 +1,6 @@
 //==============================================================================
 // Date Created:		6 April 2011
-// Last Updated:		13 May 2011
+// Last Updated:		17 May 2011
 //
 // File name:			StateManager.h
 // Programmer:			Matthew Hydock
@@ -88,12 +88,17 @@ void StateManager::navigate()
 		else
 		{
 			list<filenode*>* files = selected->getFileList();
-			temp = new Galaxy(NULL,files,(*curr)->getClusterMode(),(*curr)->getName());
+			temp = new Galaxy(NULL,files,NONE,(*curr)->getName());
 		}
 		
 		galaxies.push_back(temp);
 		curr++;
 	}
+}
+
+void StateManager::setActiveTags(list<string>* t)
+{
+	tags = t;
 }
 //==============================================================================
 
@@ -121,7 +126,40 @@ void StateManager::setTypeMode()
 {}
 
 void StateManager::setTagsMode()
-{}
+{
+	// Remove all of the previously generated galaxies that are ahead of the
+	// current position.
+	list<Galaxy*>::iterator i = curr;
+	i++;
+	galaxies.erase(i, galaxies.end());
+	// Done cleaning up future history.
+	
+	// Prepare lists to hold all files, and only those with the tags.
+	list<filenode*>* files = (*curr)->getFileList();
+	list<filenode*>* valid_files = new list<filenode*>;
+	
+	// Name of the new galaxy, based on the selected tags.
+	string name = (*curr)->getName() + " - ";
+	
+	for (list<filenode*>::iterator i = files->begin(); i!= files->end(); i++)
+	{
+		for (list<string>::iterator j = tags->begin(); j != tags->end(); j++)
+			if (contains(&((*i)->tags),*j))
+			{
+				valid_files->push_back(*i);
+				break;
+			}
+	}
+	
+	// Add the tags to the name.
+	for (list<string>::iterator i = tags->begin(); i != tags->end(); i++)
+		name += (*i) + " ";
+	
+	// Make a new galaxy, push it onto the stack, and navigate to it.	
+	Galaxy* temp = new Galaxy(NULL,valid_files,TAGS,name,tags);
+	galaxies.push_back(temp);
+	curr++;
+}
 //==============================================================================
 
 
